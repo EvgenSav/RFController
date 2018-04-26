@@ -31,7 +31,7 @@ namespace RFController {
         System.Timers.Timer t2;
         NumericUpDown CurBright;
         int? LoopedDevKey;
-        
+
 
         public DevicesForm() {
             InitializeComponent();
@@ -136,9 +136,11 @@ namespace RFController {
                     AllDevicesControls.Add(item, c);
                 }
             }
-
+            
+            //update info of each device
             foreach (var EachDeviceControls in AllDevicesControls) {
-                EachDeviceControls.Value.Text = DevBase.Data[EachDeviceControls.Key][0].Name.ToString();
+                RfDevice curDevice = DevBase.Data[EachDeviceControls.Key][0];
+                EachDeviceControls.Value.Text = curDevice.Name.ToString();
                 foreach (var item in EachDeviceControls.Value.ContextMenuStrip.Items) {
                     int contMenuStripHash = item.GetHashCode();
                     if (!ControlsHash.ContainsKey(contMenuStripHash)) {
@@ -149,19 +151,29 @@ namespace RFController {
                 foreach (Control control in cc1) {
                     switch (control.Name) {
                         case "StateBox":
-                            if (DevBase.Data[EachDeviceControls.Key][0].State != 0) {
-                                control.Text = "State: On";
-                                control.BackColor = Color.LightGreen;
+                            if (curDevice.Type != 0) { //power blocks
+                                if (curDevice.State != 0) {
+                                    control.Text = "State: On";
+                                    control.BackColor = Color.LightGreen;
+                                } else {
+                                    control.Text = "State: Off";
+                                    control.BackColor = Color.Empty;
+                                }
                             } else {
-                                control.Text = "State: Off";
-                                control.BackColor = Color.Empty;
+                                int dataCounts = TemperatureLog.Data[EachDeviceControls.Key].Count;
+                                TempAtChannel temp = TemperatureLog.Data[EachDeviceControls.Key][dataCounts - 1];
+                                control.Text = temp.ToString();
+                                if (!ControlsHash.ContainsKey(control.GetHashCode())) {
+                                    ControlsHash.Add(control.GetHashCode(), EachDeviceControls.Key);
+                                    control.Click += ShowTemp_Click;
+                                }
                             }
                             break;
                         case "TypeBox":
-                            control.Text = DevBase.Data[EachDeviceControls.Key][0].Type.ToString();
+                            control.Text = curDevice.Type.ToString();
                             break;
                         case "ChannelBox":
-                            control.Text = DevBase.Data[EachDeviceControls.Key][0].Channel.ToString();
+                            control.Text = curDevice.Channel.ToString();
                             break;
                         case "OnBtn":
                             int onBtnHash = control.GetHashCode();
@@ -179,11 +191,11 @@ namespace RFController {
                             break;
                         case "BrightBox":
                             NumericUpDown bright = (NumericUpDown)control;
-                            if (DevBase.Data[EachDeviceControls.Key][0].Type != 0 &&
-                                DevBase.Data[EachDeviceControls.Key][0].IsDimmable) {
+                            if (curDevice.Type != 0 &&
+                                curDevice.IsDimmable) {
                                 bright.Visible = true;
                                 if (bright.Value == 0) {
-                                    bright.Value = ((decimal)DevBase.Data[EachDeviceControls.Key][0].Bright / 255) * 100;
+                                    bright.Value = ((decimal)curDevice.Bright / 255) * 100;
                                 }
                             } else {
                                 control.Visible = false;
@@ -202,11 +214,15 @@ namespace RFController {
                                 ControlsHash.Add(DimBtnHash, EachDeviceControls.Key);
                                 cb.CheckedChanged += Cb_CheckedChanged;
                             }
-                            cb.Checked = DevBase.Data[EachDeviceControls.Key][0].IsDimmable;
+                            cb.Checked = curDevice.IsDimmable;
                             break;
                     }
                 }
             }
+        }
+
+        private void ShowTemp_Click(object sender, EventArgs e) {
+            throw new NotImplementedException();
         }
 
         private void Bright_ValueChanged(object sender, EventArgs e) {
@@ -243,25 +259,13 @@ namespace RFController {
 
             int BrightControlIdx = AllDevicesControls[DevKey].Controls.IndexOfKey("BrightBox");
             NumericUpDown bright = (NumericUpDown)AllDevicesControls[DevKey].Controls[BrightControlIdx];
-            int DevBright = 0;
             if (DevType == 2) { //Noo-F
-                DevBright = (int)((bright.Value / 100) * 255);
-                if (DevBright != 0) {
-                    Mtrf64.SendCmd(0, 2, NooCmd.SetBrightness, DevAddr, d0: DevBright);
-                } else {
-                    Mtrf64.SendCmd(0, 2, NooCmd.On, DevAddr);
-                }
-            }
-            if (DevType == 1) { //Noo
-                DevBright = (int)((bright.Value / 100) * 128);
-                //dev1.SendCmd(channel: DevChn, mode: 0, NooCmd.On);
-                if (bright.Value != 0) {
-                    Mtrf64.SendCmd(channel: DevChn, mode: 0, NooCmd.SetBrightness, fmt: 1, d0: DevBright);
-                } else {
-                    Mtrf64.SendCmd(channel: DevChn, mode: 0, NooCmd.On);
-                }
+                Mtrf64.SendCmd(0, 2, NooCmd.On, DevAddr);
+            } else if (DevType == 1) { //Noo
+                Mtrf64.SendCmd(channel: DevChn, mode: 0, NooCmd.On);
             }
         }
+
 
         private void OffBtn_Click(object sender, EventArgs e) {
             //MessageBox.Show("This item binded to channel: " + 
@@ -271,10 +275,9 @@ namespace RFController {
             int DevAddr = DevBase.Data[DevKey][0].Addr;
             int DevChn = DevBase.Data[DevKey][0].Channel;
 
-            if (DevType == 2) { //Noo-F
+            if (DevType == 2) {         //Noo-F
                 Mtrf64.SendCmd(0, 2, NooCmd.Off, DevAddr);
-            }
-            if (DevType == 1) { //Noo
+            } else if (DevType == 1) {  //Noo
                 Mtrf64.SendCmd(DevChn, 0, NooCmd.Off);
             }
         }
@@ -297,7 +300,7 @@ namespace RFController {
             foreach (ToolStripMenuItem item in c.ContextMenuStrip.Items) {
                 copy.ContextMenuStrip.Items.Add(item.Text);
             }
-            
+
             copy.ContextMenuStrip.Items[0].Click += Remove_Click;
             copy.ContextMenuStrip.Items[1].Click += ShowInfo_Click;
             copy.ContextMenuStrip.Items[2].Click += Settings_Click;
@@ -367,7 +370,7 @@ namespace RFController {
                     ContainsDevice = true;
                 }
             }
-            if(ContainsDevice)
+            if (ContainsDevice)
                 switch (Mtrf64.rxBuf.Cmd) {
                     case NooCmd.On:
                         if (Mtrf64.rxBuf.Mode == 0) {
@@ -419,118 +422,118 @@ namespace RFController {
 
                 }
 
+        }
+        #region Effects
+        private void SeriesOnBtn_Click(object sender, EventArgs e) {
+            foreach (var item in DevBase.Data) {
+                RfDevice rfd = item.Value[0];
+                Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.On);
             }
-            #region Effects
-            private void SeriesOnBtn_Click(object sender, EventArgs e) {
+        }
+
+        private void SeriesOffBtn_Click(object sender, EventArgs e) {
+            foreach (var item in DevBase.Data) {
+                RfDevice rfd = item.Value[0];
+                Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.Off);
+            }
+        }
+        private void FaderBtn_Click(object sender, EventArgs e) {
+            for (int i = 0; i < 10; i++) {
                 foreach (var item in DevBase.Data) {
                     RfDevice rfd = item.Value[0];
                     Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.On);
                 }
-            }
-
-            private void SeriesOffBtn_Click(object sender, EventArgs e) {
-                foreach (var item in DevBase.Data) {
+                foreach (var item in DevBase.Data.Reverse()) {
                     RfDevice rfd = item.Value[0];
                     Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.Off);
                 }
             }
-            private void FaderBtn_Click(object sender, EventArgs e) {
-                for (int i = 0; i < 10; i++) {
-                    foreach (var item in DevBase.Data) {
-                        RfDevice rfd = item.Value[0];
-                        Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.On);
-                    }
-                    foreach (var item in DevBase.Data.Reverse()) {
-                        RfDevice rfd = item.Value[0];
-                        Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.Off);
-                    }
-                }
-            }
-            #endregion
-            #region Main menu
-            private void ShowLog_MenuItem_Click(object sender, EventArgs e) {
-                if (!ShowLog_MenuItem.Checked) {
-                    logForm = new LogForm(Mtrf64);
-                    logForm.FormClosing += (obj, args) => {
-                        ShowLog_MenuItem.Checked = false;
-                    };
-                    logForm.Show();
-                    ShowLog_MenuItem.Checked = true;
-                } else {
-                    logForm.Close();
+        }
+        #endregion
+        #region Main menu
+        private void ShowLog_MenuItem_Click(object sender, EventArgs e) {
+            if (!ShowLog_MenuItem.Checked) {
+                logForm = new LogForm(Mtrf64);
+                logForm.FormClosing += (obj, args) => {
                     ShowLog_MenuItem.Checked = false;
-                }
-            }
-            private void Temperature_MenuItem_Click(object sender, EventArgs e) {
-                if (!Temperature_MenuItem.Checked) {
-                    tempForm = new TempForm(Mtrf64, TemperatureLog);
-                    tempForm.FormClosing += (obj, args) => {
-                        Temperature_MenuItem.Checked = false;
-                    };
-                    tempForm.Show();
-                    Temperature_MenuItem.Checked = true;
-                } else {
-                    tempForm.Close();
-                    Temperature_MenuItem.Checked = false;
-                }
-            }
-            private void AddNewDevice_MenuItem_Click(object sender, EventArgs e) {
-                addNewDevForm = new AddNewDevForm(DevBase, Mtrf64);
-                addNewDevForm.Show();
-                addNewDevForm.FormClosed += (_sender, args) => {
-                    this.UpdateForm();
                 };
+                logForm.Show();
+                ShowLog_MenuItem.Checked = true;
+            } else {
+                logForm.Close();
+                ShowLog_MenuItem.Checked = false;
             }
-            private void ServiceToolStrip_MenuItem_Click(object sender, EventArgs e) {
-                if (!serviceToolStripMenuItem.Checked) {
-                    serviceForm = new ServiceForm(Mtrf64);
-                    serviceForm.FormClosed += (_sender, args) => {
-                        serviceToolStripMenuItem.Checked = false;
-                    };
-                    serviceForm.Show();
-                    serviceToolStripMenuItem.Checked = true;
-                } else {
-                    serviceForm.Close();
+        }
+        private void Temperature_MenuItem_Click(object sender, EventArgs e) {
+            if (!Temperature_MenuItem.Checked) {
+                tempForm = new TempForm(Mtrf64, TemperatureLog);
+                tempForm.FormClosing += (obj, args) => {
+                    Temperature_MenuItem.Checked = false;
+                };
+                tempForm.Show();
+                Temperature_MenuItem.Checked = true;
+            } else {
+                tempForm.Close();
+                Temperature_MenuItem.Checked = false;
+            }
+        }
+        private void AddNewDevice_MenuItem_Click(object sender, EventArgs e) {
+            addNewDevForm = new AddNewDevForm(DevBase, Mtrf64);
+            addNewDevForm.Show();
+            addNewDevForm.FormClosed += (_sender, args) => {
+                this.UpdateForm();
+            };
+        }
+        private void ServiceToolStrip_MenuItem_Click(object sender, EventArgs e) {
+            if (!serviceToolStripMenuItem.Checked) {
+                serviceForm = new ServiceForm(Mtrf64);
+                serviceForm.FormClosed += (_sender, args) => {
                     serviceToolStripMenuItem.Checked = false;
-                }
+                };
+                serviceForm.Show();
+                serviceToolStripMenuItem.Checked = true;
+            } else {
+                serviceForm.Close();
+                serviceToolStripMenuItem.Checked = false;
             }
-            #endregion
-            #region Context menu
-            private void Settings_Click(object sender, EventArgs e) {
-                int devAddr = ControlsHash[sender.GetHashCode()];
-                Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 16);
-                Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 17);
-                Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 18);
-                if (settingsForm != null) { settingsForm.Close(); }
-                settingsForm = new SettingsForm(Mtrf64, DevBase, devAddr);
-                settingsForm.Show();
+        }
+        #endregion
+        #region Context menu
+        private void Settings_Click(object sender, EventArgs e) {
+            int devAddr = ControlsHash[sender.GetHashCode()];
+            Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 16);
+            Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 17);
+            Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 18);
+            if (settingsForm != null) { settingsForm.Close(); }
+            settingsForm = new SettingsForm(Mtrf64, DevBase, devAddr);
+            settingsForm.Show();
+        }
+        private void ShowInfo_Click(object sender, EventArgs e) {
+            int hash = sender.GetHashCode();
+            RfDevice rf = DevBase.Data[ControlsHash[hash]][0];
+            string res = String.Format("Device type: {0} \n" +
+                "Firmware version: {1}", rf.DevType, rf.FirmwareVer);
+            MessageBox.Show(res);
+        }
+        private void Remove_Click(object sender, EventArgs e) {
+            int hash = sender.GetHashCode();
+            DevBase.Data.Remove(ControlsHash[hash]);
+            UpdateForm();
+        }
+        private void SwitchLoop_Click(object sender, EventArgs e) {
+            ToolStripMenuItem tmi = (ToolStripMenuItem)sender;
+            if (!tmi.Checked) {
+                tmi.Checked = true;
+                t2.Start();
+                LoopedDevKey = ControlsHash[sender.GetHashCode()];
+            } else {
+                tmi.Checked = false;
+                t2.Stop();
             }
-            private void ShowInfo_Click(object sender, EventArgs e) {
-                int hash = sender.GetHashCode();
-                RfDevice rf = DevBase.Data[ControlsHash[hash]][0];
-                string res = String.Format("Device type: {0} \n" +
-                    "Firmware version: {1}", rf.DevType, rf.FirmwareVer);
-                MessageBox.Show(res);
-            }
-            private void Remove_Click(object sender, EventArgs e) {
-                int hash = sender.GetHashCode();
-                DevBase.Data.Remove(ControlsHash[hash]);
-                UpdateForm();
-            }
-            private void SwitchLoop_Click(object sender, EventArgs e) {
-                ToolStripMenuItem tmi = (ToolStripMenuItem)sender;
-                if (!tmi.Checked) {
-                    tmi.Checked = true;
-                    t2.Start();
-                    LoopedDevKey = ControlsHash[sender.GetHashCode()];
-                } else {
-                    tmi.Checked = false;
-                    t2.Stop();
-                }
-
-            }
-            #endregion
-
 
         }
+        #endregion
+
+
     }
+}

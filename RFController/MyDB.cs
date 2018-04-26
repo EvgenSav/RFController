@@ -46,6 +46,9 @@ namespace RFController {
             CurrentTime = dt;
             Value = val;
         }
+        public override string ToString() {
+            return String.Format("{0:#.##} {1}C", Value, (char)176);
+        }
     }
 
     [Serializable]
