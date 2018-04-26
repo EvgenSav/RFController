@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 
 namespace RFController {
     public partial class DevicesForm : Form {
+        int x;
         ServiceForm serviceForm;
         TempForm tempForm;
         LogForm logForm;
