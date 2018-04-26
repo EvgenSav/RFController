@@ -18,6 +18,7 @@ namespace RFController {
         LogForm logForm;
         AddNewDevForm addNewDevForm;
         SettingsForm settingsForm;
+        GraphForm tempGraphForm;
 
         Action FormUpdater;
         MyDB<int, RfDevice> DevBase;
@@ -222,7 +223,12 @@ namespace RFController {
         }
 
         private void ShowTemp_Click(object sender, EventArgs e) {
-            throw new NotImplementedException();
+            int DevKey = ControlsHash[sender.GetHashCode()];
+            if(tempGraphForm != null) {
+                tempGraphForm.Close();
+            }
+            tempGraphForm = new GraphForm(Mtrf64, TemperatureLog.Data[DevKey]);
+            tempGraphForm.Show();
         }
 
         private void Bright_ValueChanged(object sender, EventArgs e) {
