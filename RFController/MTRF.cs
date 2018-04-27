@@ -261,8 +261,12 @@ namespace RFController {
         }
         #endregion
     }
-
+    
 }
+
+    
+   
+
 public struct Mtrf {
     public Mtrf(string pName, int addr) {
         ComPortName = pName;
@@ -275,7 +279,6 @@ public struct Mtrf {
         }
     }
 }
-
 public static class Mode {
     public const int Tx = 0;
     public const int Rx = 1;

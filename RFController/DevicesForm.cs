@@ -68,7 +68,7 @@ namespace RFController {
 
             FormUpdater = new Action(UpdateForm);
             UpdateForm();
-            t1 = new System.Timers.Timer { AutoReset = false, Interval = 250 };
+            t1 = new System.Timers.Timer { AutoReset = false, Interval = 500 };
             t1.Elapsed += T1_Elapsed;
             t2 = new System.Timers.Timer { AutoReset = true, Interval = 500 };
             t2.Elapsed += T2_Elapsed;
@@ -89,15 +89,15 @@ namespace RFController {
             int DevKey = ControlsHash[CurBright.GetHashCode()];
             RfDevice Device = DevBase.Data[DevKey][0];
             int DevBright = 0;
-            Int32.TryParse(CurBright.Text, out int result);
+            string bright = CurBright.Text.TrimEnd(' ', '%');
+            Int32.TryParse(bright, out int result);
             if (Device.Type == NooDevType.PowerUnitF) { //Noo-F
-                DevBright = ((result / 100) * 255);
+                DevBright = Round(( (float)result / 100) * 255);
                 if (DevBright != 0) {
                     Mtrf64.SendCmd(0, Mode.FTx, NooCmd.SetBrightness, Device.Addr, d0: DevBright);
                 }
             } else if (Device.Type == NooDevType.PowerUnit) { //Noo
-                DevBright = ((result / 100) * 128);
-                //dev1.SendCmd(channel: DevChn, mode: 0, NooCmd.On);
+                DevBright = Round(( (float)result / 100) * 128);
                 Mtrf64.SendCmd(Device.Channel, Mode.Tx, NooCmd.SetBrightness, fmt: 1, d0: DevBright);
             }
         }
@@ -142,9 +142,15 @@ namespace RFController {
                         ControlsHash.Add(contMenuStripHash, EachDeviceControls.Key);
                     }
                 }
+                if (!ControlsHash.ContainsKey(EachDeviceControls.Value.GetHashCode())) {
+                    ControlsHash.Add(EachDeviceControls.Value.GetHashCode(), EachDeviceControls.Key);
+                }
                 Control.ControlCollection cc1 = EachDeviceControls.Value.Controls;
                 foreach (Control control in cc1) {
                     switch (control.Name) {
+                        case "TypeBox":
+                            control.Text = GetDeviceType(DevBase.Data[EachDeviceControls.Key][0]);
+                        break;
                         case "StatePictBox": //state indication
                             PictureBox pictureBox = (PictureBox)control;
                             pictureBox.BackColor = Color.LightGreen;
@@ -186,7 +192,8 @@ namespace RFController {
                         case "BrightBox":
                             if (Device.Type == NooDevType.PowerUnit || Device.Type == NooDevType.PowerUnitF) {
                                 control.Visible = true;
-                                control.Text = (((decimal)Device.Bright / 255) * 100).ToString() + " %";
+                                float bright = ((float)Device.Bright / 255) * 100;
+                                control.Text = Round(bright).ToString() + " %";
                                 int brightBoxHash = control.GetHashCode();
 
                                 if (!ControlsHash.ContainsKey(brightBoxHash)) {
@@ -232,6 +239,40 @@ namespace RFController {
             }
         }
 
+        string GetDeviceType(RfDevice dev) {
+            string res="";
+            switch (dev.Type) {
+                case NooDevType.RemController:
+                    res = "Пульт";
+                    break;
+                case NooDevType.Sensor:
+                    switch (dev.DevType) {
+                        case 1:
+                            res = "PT112";
+                            break;
+                        case 2:
+                            res = "PT111";
+                            break;
+                        case 3:
+                            res = "PM112";
+                            break;
+                    }
+                    break;
+                case NooDevType.PowerUnitF:
+                    switch (dev.DevType) {
+                        case 5:
+                            res = "SUF-1-300";
+                            break;
+                    }
+                    break;
+            }           
+            return res;
+        }
+
+        int Round(float val) {
+            if ((val - (int)val) > 0.5) return (int)val + 1;
+            else return (int)val;
+        }
         private void ShowTemp_Click(object sender, EventArgs e) {
             int DevKey = ControlsHash[sender.GetHashCode()];
             if (tempGraphForm != null) {
@@ -242,13 +283,13 @@ namespace RFController {
         }
 
         private void Bright_ValueChanged(object sender, MouseEventArgs e) {
-            Control c = (Control)sender;
-            string bright = c.Text.TrimEnd(' ', '%');
+            CurBright = (Control)sender;
+            string bright = CurBright.Text.TrimEnd(' ', '%');
             Int32.TryParse(bright, out int result);
             if ((result > 0 || e.Delta > 0) && (e.Delta < 0 || result < 100)) {
-                c.Text = (result + (e.Delta / 120)).ToString() + " %";
+                CurBright.Text = (result + (e.Delta / 120)).ToString() + " %";
                 t1.Stop();
-                CurBright = c;
+                //CurBright = c;
                 t1.Start();
             }
         }
@@ -326,7 +367,7 @@ namespace RFController {
             copy.ContextMenuStrip.Items[1].Click += ShowInfo_Click;
             copy.ContextMenuStrip.Items[2].Click += Settings_Click;
             copy.ContextMenuStrip.Items[3].Click += SwitchLoop_Click;
-
+            copy.MouseClick += Device_MouseClick;
             foreach (Control item in c.Controls) {
                 t = item.GetType();
                 ci = t.GetConstructors();
@@ -342,7 +383,15 @@ namespace RFController {
             return copy;
         }
 
-
+        private void Device_MouseClick(object sender, MouseEventArgs e) {
+            int DevKey = ControlsHash[sender.GetHashCode()];
+            RfDevice Device = DevBase.Data[DevKey][0];
+            if (Device.Type == NooDevType.PowerUnitF) { //Noo-F
+                Mtrf64.SendCmd(Device.Channel, Mode.FTx, NooCmd.Switch, Device.Addr);
+            } else if (Device.Type == NooDevType.PowerUnit) { //Noo
+                Mtrf64.SendCmd(Device.Channel, Mode.Tx, NooCmd.Switch);
+            }
+        }
 
         private MyDB<int, TempAtChannel> GetTempBase() {
             MyDB<int, TempAtChannel> tempLog;

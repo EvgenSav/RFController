@@ -35,13 +35,13 @@
             this.offTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
             this.BrightBox = new System.Windows.Forms.Label();
             this.StatePictBox = new System.Windows.Forms.PictureBox();
-            this.TypeBox = new System.Windows.Forms.TextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.showLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ShowLog_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.Temperature_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewDeviceMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.TypeBox = new System.Windows.Forms.Label();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
@@ -66,14 +66,14 @@
             this.groupBox1.AutoSize = true;
             this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox1.ContextMenuStrip = this.contextMenuStrip1;
+            this.groupBox1.Controls.Add(this.TypeBox);
             this.groupBox1.Controls.Add(this.BrightBox);
             this.groupBox1.Controls.Add(this.StatePictBox);
-            this.groupBox1.Controls.Add(this.TypeBox);
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
-            this.groupBox1.MaximumSize = new System.Drawing.Size(135, 190);
-            this.groupBox1.MinimumSize = new System.Drawing.Size(135, 0);
+            this.groupBox1.MaximumSize = new System.Drawing.Size(120, 190);
+            this.groupBox1.MinimumSize = new System.Drawing.Size(120, 0);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(135, 100);
+            this.groupBox1.Size = new System.Drawing.Size(120, 100);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "groupBox1";
@@ -140,20 +140,12 @@
             // StatePictBox
             // 
             this.StatePictBox.BackColor = System.Drawing.Color.LightGreen;
-            this.StatePictBox.Location = new System.Drawing.Point(109, 7);
+            this.StatePictBox.Location = new System.Drawing.Point(94, 7);
             this.StatePictBox.Name = "StatePictBox";
             this.StatePictBox.Size = new System.Drawing.Size(25, 23);
             this.StatePictBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.StatePictBox.TabIndex = 15;
             this.StatePictBox.TabStop = false;
-            // 
-            // TypeBox
-            // 
-            this.TypeBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.TypeBox.Location = new System.Drawing.Point(19, 19);
-            this.TypeBox.Name = "TypeBox";
-            this.TypeBox.Size = new System.Drawing.Size(45, 23);
-            this.TypeBox.TabIndex = 4;
             // 
             // menuStrip1
             // 
@@ -204,6 +196,17 @@
             this.addNewDeviceMenuItem.Text = "Add new device";
             this.addNewDeviceMenuItem.Click += new System.EventHandler(this.AddNewDevice_MenuItem_Click);
             // 
+            // TypeBox
+            // 
+            this.TypeBox.AutoSize = true;
+            this.TypeBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.TypeBox.Location = new System.Drawing.Point(9, 21);
+            this.TypeBox.MinimumSize = new System.Drawing.Size(70, 0);
+            this.TypeBox.Name = "TypeBox";
+            this.TypeBox.Size = new System.Drawing.Size(70, 13);
+            this.TypeBox.TabIndex = 17;
+            this.TypeBox.Text = "label1";
+            // 
             // DevicesForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
@@ -231,7 +234,6 @@
 
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.TextBox TypeBox;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem removeDeviceToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem firmwareVersionToolStripMenuItem;
@@ -247,5 +249,6 @@
         private System.Windows.Forms.ToolStripTextBox offTimeToolStripMenuItem;
         private System.Windows.Forms.PictureBox StatePictBox;
         private System.Windows.Forms.Label BrightBox;
+        private System.Windows.Forms.Label TypeBox;
     }
 }
