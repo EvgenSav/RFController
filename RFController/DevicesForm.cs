@@ -33,7 +33,6 @@ namespace RFController {
         NumericUpDown CurBright;
         int? LoopedDevKey;
 
-
         public DevicesForm() {
             InitializeComponent();
             DevBase = GetDeviceBase();
@@ -88,22 +87,19 @@ namespace RFController {
 
         private void T1_Elapsed(object sender, System.Timers.ElapsedEventArgs e) {
             int DevKey = ControlsHash[CurBright.GetHashCode()];
-            int DevType = DevBase.Data[DevKey][0].Type;
-            int DevAddr = DevBase.Data[DevKey][0].Addr;
-            int DevChn = DevBase.Data[DevKey][0].Channel;
+            RfDevice Device = DevBase.Data[DevKey][0];
 
             int DevBright = 0;
-            if (DevType == 2) { //Noo-F
+            if (Device.Type == NooDevType.PowerUnitF) { //Noo-F
                 DevBright = (int)((CurBright.Value / 100) * 255);
                 if (DevBright != 0) {
-                    Mtrf64.SendCmd(0, 2, NooCmd.SetBrightness, DevAddr, d0: DevBright);
+                    Mtrf64.SendCmd(0, Mode.FTx, NooCmd.SetBrightness, Device.Addr, d0: DevBright);
                 }
-            }
-            if (DevType == 1) { //Noo
+            }else if (Device.Type == NooDevType.PowerUnit) { //Noo
                 DevBright = (int)((CurBright.Value / 100) * 128);
                 //dev1.SendCmd(channel: DevChn, mode: 0, NooCmd.On);
                 if (CurBright.Value != 0) {
-                    Mtrf64.SendCmd(channel: DevChn, mode: 0, NooCmd.SetBrightness, fmt: 1, d0: DevBright);
+                    Mtrf64.SendCmd(Device.Channel, Mode.Tx, NooCmd.SetBrightness, fmt: 1, d0: DevBright);
                 }
             }
         }
@@ -151,17 +147,60 @@ namespace RFController {
                 Control.ControlCollection cc1 = EachDeviceControls.Value.Controls;
                 foreach (Control control in cc1) {
                     switch (control.Name) {
-                        case "StateBox":
-                            if (Device.Type == NooDevType.PowerUnit || 
+                        case "StatePictBox": //state indication
+                            PictureBox pictureBox = (PictureBox)control;
+                            pictureBox.BackColor = Color.LightGreen;
+                            if (Device.Type == NooDevType.PowerUnit ||
                                 Device.Type == NooDevType.PowerUnitF) { //power blocks
                                 if (Device.State != 0) {
-                                    control.Text = "State: On";
-                                    control.BackColor = Color.LightGreen;
+                                    control.Show();
                                 } else {
-                                    control.Text = "State: Off";
-                                    control.BackColor = Color.Empty;
+                                    control.Hide();
+                                }
+                            } else { control.Hide(); }
+                                break;
+                        case "OnBtn": 
+                            if (Device.Type == NooDevType.PowerUnit ||
+                                Device.Type == NooDevType.PowerUnitF) {
+
+                                int onBtnHash = control.GetHashCode();
+                                if (!ControlsHash.ContainsKey(onBtnHash)) {
+                                    ControlsHash.Add(onBtnHash, EachDeviceControls.Key);
+                                    control.Click += OnBtn_Click;
                                 }
                             } else {
+                                control.Visible = false;
+                            }
+                            break;
+                        case "OffBtn":
+                            if (Device.Type == NooDevType.PowerUnit ||
+                                Device.Type == NooDevType.PowerUnitF) {
+
+                                int offBtnHash = control.GetHashCode();
+                                if (!ControlsHash.ContainsKey(offBtnHash)) {
+                                    ControlsHash.Add(offBtnHash, EachDeviceControls.Key);
+                                    control.Click += OffBtn_Click;
+                                }
+                            } else {
+                                control.Visible = false;
+                            }
+                            break;
+                        case "BrightBox":
+                            //NumericUpDown bright = (NumericUpDown)control;
+                            //if (Device.Type != 0 &&
+                            //    Device.IsDimmable) {
+                            //    bright.Visible = true;
+                            //    if (bright.Value == 0) {
+                            //        bright.Value = ((decimal)Device.Bright / 255) * 100;
+                            //    }
+                            //    int brightBoxHash = control.GetHashCode();
+
+                            //    if (!ControlsHash.ContainsKey(brightBoxHash)) {
+                            //        ControlsHash.Add(brightBoxHash, EachDeviceControls.Key);
+                            //        bright.ValueChanged += Bright_ValueChanged; ;
+                            //    }
+                            /*} else */if (Device.Type == NooDevType.Sensor) {
+                                
                                 if (!TemperatureLog.Data.ContainsKey(EachDeviceControls.Key)) {
                                     TemperatureLog.Data.Add(EachDeviceControls.Key, new List<TempAtChannel>());
                                 }
@@ -170,60 +209,30 @@ namespace RFController {
                                     TempAtChannel temp = TemperatureLog.Data[EachDeviceControls.Key][dataCounts - 1];
                                     control.Text = temp.ToString();
                                 } else {
-                                    control.Text = "no data";
+                                    //bright.Value = "no data";
                                 }
                                 if (!ControlsHash.ContainsKey(control.GetHashCode())) {
                                     ControlsHash.Add(control.GetHashCode(), EachDeviceControls.Key);
                                     control.Click += ShowTemp_Click;
                                 }
-                            }
+                            } else { 
+                                control.Visible = false;
+                            }          
                             break;
-                        case "TypeBox":
-                            control.Text = Device.Type.ToString();
-                            break;
-                        case "ChannelBox":
-                            control.Text = Device.Channel.ToString();
-                            break;
-                        case "OnBtn":
-                            int onBtnHash = control.GetHashCode();
-                            if (!ControlsHash.ContainsKey(onBtnHash)) {
-                                ControlsHash.Add(onBtnHash, EachDeviceControls.Key);
-                                control.Click += OnBtn_Click;
-                            }
-                            break;
-                        case "OffBtn":
-                            int offBtnHash = control.GetHashCode();
-                            if (!ControlsHash.ContainsKey(offBtnHash)) {
-                                ControlsHash.Add(offBtnHash, EachDeviceControls.Key);
-                                control.Click += OffBtn_Click;
-                            }
-                            break;
-                        case "BrightBox":
-                            NumericUpDown bright = (NumericUpDown)control;
-                            if (Device.Type != 0 &&
-                                Device.IsDimmable) {
-                                bright.Visible = true;
-                                if (bright.Value == 0) {
-                                    bright.Value = ((decimal)Device.Bright / 255) * 100;
+                        case "DimmerEn":
+                            if (Device.Type == NooDevType.PowerUnit ||
+                                Device.Type == NooDevType.PowerUnitF) {
+
+                                CheckBox cb = (CheckBox)control;
+                                int DimBtnHash = control.GetHashCode();
+                                if (!ControlsHash.ContainsKey(DimBtnHash)) {
+                                    ControlsHash.Add(DimBtnHash, EachDeviceControls.Key);
+                                    cb.CheckedChanged += Cb_CheckedChanged;
                                 }
+                                cb.Checked = Device.IsDimmable;
                             } else {
                                 control.Visible = false;
                             }
-                            int brightBoxHash = control.GetHashCode();
-
-                            if (!ControlsHash.ContainsKey(brightBoxHash)) {
-                                ControlsHash.Add(brightBoxHash, EachDeviceControls.Key);
-                                bright.ValueChanged += Bright_ValueChanged; ;
-                            }
-                            break;
-                        case "DimmerEn":
-                            CheckBox cb = (CheckBox)control;
-                            int DimBtnHash = control.GetHashCode();
-                            if (!ControlsHash.ContainsKey(DimBtnHash)) {
-                                ControlsHash.Add(DimBtnHash, EachDeviceControls.Key);
-                                cb.CheckedChanged += Cb_CheckedChanged;
-                            }
-                            cb.Checked = Device.IsDimmable;
                             break;
                     }
                 }
@@ -307,7 +316,6 @@ namespace RFController {
             p = ci[0].GetParameters();
 
             Control copy = (Control)ci[0].Invoke(p);
-
             copy.Size = c.Size;
             copy.ContextMenuStrip = new ContextMenuStrip();
 
