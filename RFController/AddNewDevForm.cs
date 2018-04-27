@@ -12,10 +12,10 @@ namespace RFController {
     public partial class AddNewDevForm : Form {
         MyDB<int, RfDevice> DevList;    //device list
         MTRF dev1;                      //MTRF driver
-        RfDevice rfDev;
+        RfDevice Device;
         Action FormUpdater;
         int FindedChannel;
-        DevType SelectedType;
+        int SelectedType;
         bool WaitingBindFlag = false;
 
         public AddNewDevForm(MyDB<int, RfDevice> devList, MTRF dev) {
@@ -27,15 +27,14 @@ namespace RFController {
             DevList = devList;
             dev1 = dev;
 
-            NooDevType[] types = {
-                new NooDevType("Пульт / датчик",                DevType.RC),
-                new NooDevType("Сил. блок без обр. связи",      DevType.PB),
-                new NooDevType("Сил. блок с обр. связью",       DevType.PB_F)
-            };
-
-            DevTypeBox.DataSource = types;
-            DevTypeBox.ValueMember = "Type";
-            DevTypeBox.DisplayMember = "TypeName";
+            DevTypeBox.DataSource = new[] {
+                new { Name = "Пульт", Value = NooDevType.RemController },
+                new { Name = "Сил. блок без обр. связи", Value = NooDevType.PowerUnit },
+                new { Name = "Сил. блок с обр. связью", Value = NooDevType.PowerUnitF },
+                new { Name = "Датчик", Value = NooDevType.Sensor },
+                 };
+            DevTypeBox.ValueMember = "Value";
+            DevTypeBox.DisplayMember = "Name";
 
             DevTypeBox.Enabled = false;
             Step3ToolTip.Visible = false;
@@ -44,7 +43,6 @@ namespace RFController {
             Step6ToolTip.Visible = false;
 
             BindBtn.Visible = false;
-
             Status.Visible = true;
 
 
@@ -61,24 +59,33 @@ namespace RFController {
         private void Dev1_NewDataReceived(object sender, EventArgs e) {
             if (WaitingBindFlag) {
                 switch (SelectedType) {
-                    case DevType.RC:
-                        if (FindedChannel == dev1.rxBuf.Ch && dev1.rxBuf.Mode == 1) {
-                            DevList.Add(FindedChannel, rfDev);
+                    case NooDevType.PowerUnitF:
+                        if (dev1.rxBuf.Mode == 2 && dev1.rxBuf.Ctr == 3) {
+                            WaitingBindFlag = false;
+                            Device.Addr = dev1.rxBuf.AddrF;
+                            DevList.Add(dev1.rxBuf.AddrF, Device);
                             this.BeginInvoke(FormUpdater);
                         }
                         break;
-                    case DevType.PB_F:
-                        if (dev1.rxBuf.Mode == 2 && dev1.rxBuf.Ctr == 3) {
+                    case NooDevType.Sensor:
+                        if (dev1.rxBuf.Cmd == NooCmd.Bind && dev1.rxBuf.Fmt == 1 &&
+                            FindedChannel == dev1.rxBuf.Ch && dev1.rxBuf.Mode == 1) {
                             WaitingBindFlag = false;
-                            rfDev.Addr = dev1.rxBuf.AddrF;
-                            DevList.Add(dev1.rxBuf.AddrF, rfDev);
+                            Device.DevType = dev1.rxBuf.D0;
+                            DevList.Add(FindedChannel, Device);
                             this.BeginInvoke(FormUpdater);
                         }
                         break;
                     default:
+                        if (dev1.rxBuf.Cmd == NooCmd.Bind && FindedChannel == dev1.rxBuf.Ch
+                            && dev1.rxBuf.Mode == 1) {
+                            WaitingBindFlag = false;
+                            DevList.Add(FindedChannel, Device);
+                            this.BeginInvoke(FormUpdater);
+                        }
                         break;
-                }                
-            }            
+                }
+            }
         }
 
 
@@ -98,7 +105,6 @@ namespace RFController {
         public void UpdateForm() {
             Status.BackColor = Color.LightGreen;
             Status.Text = "Device added";
-            WaitingBindFlag = false;
             timer1.Interval = 1500;
             timer1.Start();
         }
@@ -120,18 +126,35 @@ namespace RFController {
         }
 
         private void DevTypeBox_SelectionChangeCommitted(object sender, EventArgs e) {
-            SelectedType = (DevType)DevTypeBox.SelectedValue;
-            dev1.BindOn(0, 1, bindOff: true);                                           //send disable bind if enabled
-            Step2ToolTip.BackColor = Color.LightGreen;                          //indicate step 2 - done
-            FindedChannel = FindEmptyChannel((int)DevTypeBox.SelectedValue);    //find empty channel
+            SelectedType = (int)DevTypeBox.SelectedValue;
+            dev1.BindOn(0, 1, bindOff: true);                  //send disable bind if enabled
+            Step2ToolTip.BackColor = Color.LightGreen;         //indicate step 2 - done
+            FindedChannel = FindEmptyChannel(SelectedType);    //find empty channel
             if (FindedChannel != -1) {
-                rfDev = new RfDevice();
-                rfDev.Name = DevNameBox.Text;
-                rfDev.Type = (int)SelectedType;
-                rfDev.Channel = FindedChannel;
+                Device = new RfDevice {
+                    Name = DevNameBox.Text,
+                    Type = SelectedType,
+                    Channel = FindedChannel
+                };
 
                 switch (SelectedType) {
-                    case DevType.RC:
+                    case NooDevType.PowerUnit:
+                        WaitingBindFlag = false;
+                        Step3ToolTip.Text = "Step 3. Press service button. (LED should start blinking)";
+                        Step3ToolTip.Visible = true;
+                        Step4Tooltip.Visible = true;
+                        BindBtn.Visible = true;
+                        Size = new Size(0, 295);
+                        break;
+                    case NooDevType.PowerUnitF:
+                        WaitingBindFlag = false;
+                        Step3ToolTip.Text = "Step 3. Press service button. (LED should start blinking)";
+                        Step3ToolTip.Visible = true;
+                        Step4Tooltip.Visible = true;
+                        BindBtn.Visible = true;
+                        Size = new Size(0, 295);
+                        break;
+                    default: //NooDevType.RemController or NooDevType.Sensor
                         dev1.BindOn(FindedChannel, 1);  //enable bind at finded chnannel
                         Step3ToolTip.Text = "Step 3. Press service button";
                         Step3ToolTip.Visible = true;
@@ -143,41 +166,22 @@ namespace RFController {
                         timer1.Interval = 25000;
                         timer1.Start();
                         break;
-                    case DevType.PB:
-                        WaitingBindFlag = false;
-                        Step3ToolTip.Text = "Step 3. Press service button. (LED should start blinking)";
-                        Step3ToolTip.Visible = true;
-                        Step4Tooltip.Visible = true;
-                        BindBtn.Visible = true;
-                        Size = new Size(0, 295);
-                        break;
-                    case DevType.PB_F:
-                        WaitingBindFlag = false;
-                        Step3ToolTip.Text = "Step 3. Press service button. (LED should start blinking)";
-                        Step3ToolTip.Visible = true;
-                        Step4Tooltip.Visible = true;
-                        BindBtn.Visible = true;
-                        Size = new Size(0, 295);
-                        break;
                 }
             }
 
         }
 
-
-
-
         private int FindEmptyChannel(int mode) {
             int FAddrCount = 0;
             //Noo-F mode
-            if (mode == 2) {
-                var res = DevList.Data.Where((x) => { return (x.Value[0].Type == 2); });
+            if (mode == NooDevType.PowerUnitF) {
+                var res = DevList.Data.Where((x) => { return (x.Value[0].Type == NooDevType.PowerUnitF); });
                 foreach (var item in res) {
                     FAddrCount++;
                     //MessageBox.Show(item.Key.ToString());
                 }
-                if (FAddrCount < 64) return 0; //noo F memory is Full
-                else return -1;
+                if (FAddrCount < 64) return 0; 
+                else return -1; //noo F memory is Full
             } else { //Noo
                 for (int i = 0; i < 64; i++) {
                     if (DevList.Data.ContainsKey(i)) {
@@ -191,8 +195,8 @@ namespace RFController {
         }
 
         private void BindBtn_Click(object sender, EventArgs e) {
-            if (SelectedType == DevType.PB_F) {
-                dev1.BindOn(FindedChannel, (int)DevType.PB_F);
+            if (SelectedType == NooDevType.PowerUnitF) {
+                dev1.BindOn(FindedChannel, NooDevType.PowerUnitF);
                 Status.Text = "Waiting...";
                 WaitingBindFlag = true;
                 timer1.Interval = 1000;
@@ -231,21 +235,9 @@ namespace RFController {
 
         private void OkBtn_Click(object sender, EventArgs e) {
             Step6ToolTip.BackColor = Color.LightGreen;
-            DevList.Add(FindedChannel, rfDev);
+            DevList.Add(FindedChannel, Device);
             WaitingBindFlag = false;
             UpdateForm();
-        }
-    }
-
-
-    public enum DevType { RC = 0, PB, PB_F };
-
-    public struct NooDevType {
-        public DevType Type { get; private set; }
-        public string TypeName { get; private set; }
-        public NooDevType(string tName, DevType type) {
-            Type = type;
-            TypeName = tName;
         }
     }
 }

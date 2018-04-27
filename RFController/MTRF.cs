@@ -15,11 +15,11 @@ namespace RFController {
         public Buf txBuf;
 
         public float[] LastTempBuf { get; private set; }
-        public MtrfMode[] modes = {
-            new MtrfMode("Tx", 0),  new MtrfMode("Rx", 1),
-            new MtrfMode("F Tx", 2),  new MtrfMode("F Rx", 3),
-            new MtrfMode("Service", 4),  new MtrfMode("Firmw.Upd", 5)
-        };
+        //public MtrfMode[] modes = {
+        //    new MtrfMode("Tx", 0),  new MtrfMode("Rx", 1),
+        //    new MtrfMode("F Tx", 2),  new MtrfMode("F Rx", 3),
+        //    new MtrfMode("Service", 4),  new MtrfMode("Firmw.Upd", 5)
+        //};
 
         Timer CmdQueueTmr;
         Task task1;
@@ -75,7 +75,7 @@ namespace RFController {
             foreach (var portName in Ports) {
                 OpenPort(portName);
                 rxBuf = new Buf();
-                SendCmd(0, 4, 0, queue: false);
+                SendCmd(0, Mode.Service, 0, queue: false);
                 AnswerReceived2.WaitOne(1000);
                 ClosePort(portName);
                 AnswerReceived2.Reset();
@@ -189,7 +189,7 @@ namespace RFController {
             if (bindOff) { //Send Bind Off
                 txBuf.Ctr = 4;
             } else {
-                if (mode == 0 || mode == 2) {   //Send Bind Cmd
+                if (mode == Mode.Tx || mode == Mode.FTx) {   //Send Bind Cmd
                     txBuf.Ctr = 0;
                     txBuf.Cmd = NooCmd.Bind;
                 } else {                        //Send Enable Bind at channel
@@ -203,15 +203,15 @@ namespace RFController {
             txBuf.Sp = 172;
 
             AnswerReceived.Set();
-            AddCmdToQueue(txBuf);
-            //SendData(txBuf);
+            //AddCmdToQueue(txBuf);
+            SendData(txBuf);
         }
         public void Unbind(int channel, int mode, bool unbindAll = false) {
             Buf txBuf = new Buf();
             txBuf.St = 171;
             txBuf.Mode = mode;
             if (!unbindAll) {
-                if (mode == 1 || mode == 3) {
+                if (mode == Mode.Rx || mode == Mode.FRx) {
                     txBuf.Ctr = 5;
                 } else {
                     txBuf.Ctr = 0;
@@ -276,13 +276,19 @@ public struct Mtrf {
     }
 }
 
-public struct MtrfMode {
-    public MtrfMode(string name, int val) {
-        Name = name;
-        Value = val;
-    }
-    public string Name { get; set; }
-    public int Value { get; set; }
+public static class Mode {
+    public const int Tx = 0;
+    public const int Rx = 1;
+    public const int FTx = 2;
+    public const int FRx = 3;
+    public const int Service = 4;
+    public const int FirmwUpd = 5;
+}
+public static class NooDevType {
+    public const int RemController = 0;
+    public const int PowerUnit = 1;
+    public const int PowerUnitF = 2;
+    public const int Sensor = 3;
 }
 
 public static class NooCmd {

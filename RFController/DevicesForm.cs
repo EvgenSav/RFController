@@ -113,6 +113,7 @@ namespace RFController {
             if (logForm != null) logForm.Close();
             if (tempForm != null) tempForm.Close();
             if (serviceForm != null) serviceForm.Close();
+            if (tempGraphForm != null) tempGraphForm.Close();
             TemperatureLog.SaveToFile(String.Format("{0} templog.json", DateTime.Now.ToShortDateString()));
             DevBase.SaveToFile("BindedDeviceList.json");
         }
@@ -140,8 +141,8 @@ namespace RFController {
             
             //update info of each device
             foreach (var EachDeviceControls in AllDevicesControls) {
-                RfDevice curDevice = DevBase.Data[EachDeviceControls.Key][0];
-                EachDeviceControls.Value.Text = curDevice.Name.ToString();
+                RfDevice Device = DevBase.Data[EachDeviceControls.Key][0];
+                EachDeviceControls.Value.Text = Device.Name.ToString();
                 foreach (var item in EachDeviceControls.Value.ContextMenuStrip.Items) {
                     int contMenuStripHash = item.GetHashCode();
                     if (!ControlsHash.ContainsKey(contMenuStripHash)) {
@@ -152,8 +153,9 @@ namespace RFController {
                 foreach (Control control in cc1) {
                     switch (control.Name) {
                         case "StateBox":
-                            if (curDevice.Type != 0) { //power blocks
-                                if (curDevice.State != 0) {
+                            if (Device.Type == NooDevType.PowerUnit || 
+                                Device.Type == NooDevType.PowerUnitF) { //power blocks
+                                if (Device.State != 0) {
                                     control.Text = "State: On";
                                     control.BackColor = Color.LightGreen;
                                 } else {
@@ -161,9 +163,16 @@ namespace RFController {
                                     control.BackColor = Color.Empty;
                                 }
                             } else {
+                                if (!TemperatureLog.Data.ContainsKey(EachDeviceControls.Key)) {
+                                    TemperatureLog.Data.Add(EachDeviceControls.Key, new List<TempAtChannel>());
+                                }
                                 int dataCounts = TemperatureLog.Data[EachDeviceControls.Key].Count;
-                                TempAtChannel temp = TemperatureLog.Data[EachDeviceControls.Key][dataCounts - 1];
-                                control.Text = temp.ToString();
+                                if (dataCounts > 0) {
+                                    TempAtChannel temp = TemperatureLog.Data[EachDeviceControls.Key][dataCounts - 1];
+                                    control.Text = temp.ToString();
+                                } else {
+                                    control.Text = "no data";
+                                }
                                 if (!ControlsHash.ContainsKey(control.GetHashCode())) {
                                     ControlsHash.Add(control.GetHashCode(), EachDeviceControls.Key);
                                     control.Click += ShowTemp_Click;
@@ -171,10 +180,10 @@ namespace RFController {
                             }
                             break;
                         case "TypeBox":
-                            control.Text = curDevice.Type.ToString();
+                            control.Text = Device.Type.ToString();
                             break;
                         case "ChannelBox":
-                            control.Text = curDevice.Channel.ToString();
+                            control.Text = Device.Channel.ToString();
                             break;
                         case "OnBtn":
                             int onBtnHash = control.GetHashCode();
@@ -192,11 +201,11 @@ namespace RFController {
                             break;
                         case "BrightBox":
                             NumericUpDown bright = (NumericUpDown)control;
-                            if (curDevice.Type != 0 &&
-                                curDevice.IsDimmable) {
+                            if (Device.Type != 0 &&
+                                Device.IsDimmable) {
                                 bright.Visible = true;
                                 if (bright.Value == 0) {
-                                    bright.Value = ((decimal)curDevice.Bright / 255) * 100;
+                                    bright.Value = ((decimal)Device.Bright / 255) * 100;
                                 }
                             } else {
                                 control.Visible = false;
@@ -215,7 +224,7 @@ namespace RFController {
                                 ControlsHash.Add(DimBtnHash, EachDeviceControls.Key);
                                 cb.CheckedChanged += Cb_CheckedChanged;
                             }
-                            cb.Checked = curDevice.IsDimmable;
+                            cb.Checked = Device.IsDimmable;
                             break;
                     }
                 }

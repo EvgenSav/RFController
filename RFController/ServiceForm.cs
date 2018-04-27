@@ -24,7 +24,7 @@ namespace RFController {
             }
 
             portSel.DataSource = Mtrf64.GetAvailableComPorts();
-            modeSel.DataSource = Mtrf64.modes;
+            //modeSel.DataSource = Mtrf64.modes;
             modeSel.DisplayMember = "Name";
             modeSel.ValueMember = "Value"; 
         }
