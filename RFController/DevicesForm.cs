@@ -186,6 +186,7 @@ namespace RFController {
                             }
                             break;
                         case "BrightBox":
+
                             //NumericUpDown bright = (NumericUpDown)control;
                             //if (Device.Type != 0 &&
                             //    Device.IsDimmable) {
