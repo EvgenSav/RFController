@@ -31,11 +31,11 @@
             this.firmwareVersionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.switchLoopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.onTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
+            this.offTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
             this.BrightBox = new System.Windows.Forms.NumericUpDown();
             this.DimmerEn = new System.Windows.Forms.CheckBox();
             this.TypeBox = new System.Windows.Forms.TextBox();
-            this.ChannelBox = new System.Windows.Forms.TextBox();
-            this.StateBox = new System.Windows.Forms.TextBox();
             this.OffBtn = new System.Windows.Forms.Button();
             this.OnBtn = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -44,13 +44,13 @@
             this.Temperature_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewDeviceMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.onTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
-            this.offTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
+            this.StatePictBox = new System.Windows.Forms.PictureBox();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BrightBox)).BeginInit();
             this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.StatePictBox)).BeginInit();
             this.SuspendLayout();
             // 
             // flowLayoutPanel1
@@ -70,17 +70,17 @@
             this.groupBox1.AutoSize = true;
             this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox1.ContextMenuStrip = this.contextMenuStrip1;
+            this.groupBox1.Controls.Add(this.StatePictBox);
             this.groupBox1.Controls.Add(this.BrightBox);
             this.groupBox1.Controls.Add(this.DimmerEn);
             this.groupBox1.Controls.Add(this.TypeBox);
-            this.groupBox1.Controls.Add(this.ChannelBox);
-            this.groupBox1.Controls.Add(this.StateBox);
             this.groupBox1.Controls.Add(this.OffBtn);
             this.groupBox1.Controls.Add(this.OnBtn);
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
+            this.groupBox1.MaximumSize = new System.Drawing.Size(135, 190);
             this.groupBox1.MinimumSize = new System.Drawing.Size(135, 0);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(135, 204);
+            this.groupBox1.Size = new System.Drawing.Size(135, 146);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "groupBox1";
@@ -93,7 +93,7 @@
             this.settingsToolStripMenuItem,
             this.switchLoopToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(166, 114);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(166, 92);
             // 
             // removeDeviceToolStripMenuItem
             // 
@@ -122,10 +122,27 @@
             this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.switchLoopToolStripMenuItem.Text = "Switch Loop";
             // 
+            // onTimeToolStripMenuItem
+            // 
+            this.onTimeToolStripMenuItem.Name = "onTimeToolStripMenuItem";
+            this.onTimeToolStripMenuItem.Size = new System.Drawing.Size(152, 23);
+            this.onTimeToolStripMenuItem.Text = "On Time";
+            // 
+            // offTimeToolStripMenuItem
+            // 
+            this.offTimeToolStripMenuItem.Name = "offTimeToolStripMenuItem";
+            this.offTimeToolStripMenuItem.Size = new System.Drawing.Size(212, 23);
+            this.offTimeToolStripMenuItem.Text = "Off Time";
+            // 
             // BrightBox
             // 
             this.BrightBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.BrightBox.Location = new System.Drawing.Point(19, 106);
+            this.BrightBox.Location = new System.Drawing.Point(19, 48);
+            this.BrightBox.Minimum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            -2147483648});
             this.BrightBox.Name = "BrightBox";
             this.BrightBox.Size = new System.Drawing.Size(100, 23);
             this.BrightBox.TabIndex = 8;
@@ -134,7 +151,7 @@
             // 
             this.DimmerEn.AutoSize = true;
             this.DimmerEn.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.DimmerEn.Location = new System.Drawing.Point(19, 164);
+            this.DimmerEn.Location = new System.Drawing.Point(19, 106);
             this.DimmerEn.Name = "DimmerEn";
             this.DimmerEn.Size = new System.Drawing.Size(89, 21);
             this.DimmerEn.TabIndex = 7;
@@ -146,28 +163,12 @@
             this.TypeBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.TypeBox.Location = new System.Drawing.Point(19, 19);
             this.TypeBox.Name = "TypeBox";
-            this.TypeBox.Size = new System.Drawing.Size(100, 23);
+            this.TypeBox.Size = new System.Drawing.Size(79, 23);
             this.TypeBox.TabIndex = 4;
-            // 
-            // ChannelBox
-            // 
-            this.ChannelBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.ChannelBox.Location = new System.Drawing.Point(19, 48);
-            this.ChannelBox.Name = "ChannelBox";
-            this.ChannelBox.Size = new System.Drawing.Size(100, 23);
-            this.ChannelBox.TabIndex = 3;
-            // 
-            // StateBox
-            // 
-            this.StateBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.StateBox.Location = new System.Drawing.Point(19, 77);
-            this.StateBox.Name = "StateBox";
-            this.StateBox.Size = new System.Drawing.Size(100, 23);
-            this.StateBox.TabIndex = 2;
             // 
             // OffBtn
             // 
-            this.OffBtn.Location = new System.Drawing.Point(68, 135);
+            this.OffBtn.Location = new System.Drawing.Point(70, 77);
             this.OffBtn.Name = "OffBtn";
             this.OffBtn.Size = new System.Drawing.Size(49, 23);
             this.OffBtn.TabIndex = 1;
@@ -176,7 +177,7 @@
             // 
             // OnBtn
             // 
-            this.OnBtn.Location = new System.Drawing.Point(17, 135);
+            this.OnBtn.Location = new System.Drawing.Point(19, 77);
             this.OnBtn.Name = "OnBtn";
             this.OnBtn.Size = new System.Drawing.Size(45, 23);
             this.OnBtn.TabIndex = 0;
@@ -232,17 +233,15 @@
             this.addNewDeviceMenuItem.Text = "Add new device";
             this.addNewDeviceMenuItem.Click += new System.EventHandler(this.AddNewDevice_MenuItem_Click);
             // 
-            // onTimeToolStripMenuItem
+            // StatePictBox
             // 
-            this.onTimeToolStripMenuItem.Name = "onTimeToolStripMenuItem";
-            this.onTimeToolStripMenuItem.Size = new System.Drawing.Size(152, 23);
-            this.onTimeToolStripMenuItem.Text = "On Time";
-            // 
-            // offTimeToolStripMenuItem
-            // 
-            this.offTimeToolStripMenuItem.Name = "offTimeToolStripMenuItem";
-            this.offTimeToolStripMenuItem.Size = new System.Drawing.Size(212, 23);
-            this.offTimeToolStripMenuItem.Text = "Off Time";
+            this.StatePictBox.BackColor = System.Drawing.Color.LightGreen;
+            this.StatePictBox.Location = new System.Drawing.Point(109, 7);
+            this.StatePictBox.Name = "StatePictBox";
+            this.StatePictBox.Size = new System.Drawing.Size(25, 23);
+            this.StatePictBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.StatePictBox.TabIndex = 15;
+            this.StatePictBox.TabStop = false;
             // 
             // DevicesForm
             // 
@@ -262,6 +261,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.BrightBox)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.StatePictBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -272,8 +272,6 @@
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button OnBtn;
-        private System.Windows.Forms.TextBox ChannelBox;
-        private System.Windows.Forms.TextBox StateBox;
         private System.Windows.Forms.Button OffBtn;
         private System.Windows.Forms.TextBox TypeBox;
         private System.Windows.Forms.CheckBox DimmerEn;
@@ -291,5 +289,6 @@
         private System.Windows.Forms.ToolStripMenuItem switchLoopToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox onTimeToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox offTimeToolStripMenuItem;
+        private System.Windows.Forms.PictureBox StatePictBox;
     }
 }
