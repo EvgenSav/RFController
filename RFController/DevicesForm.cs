@@ -137,8 +137,7 @@ namespace RFController {
                     flowLayoutPanel1.Controls.Add(c); //add controls
                     AllDevicesControls.Add(item, c);
                 }
-            }
-            
+            }          
             //update info of each device
             foreach (var EachDeviceControls in AllDevicesControls) {
                 RfDevice Device = DevBase.Data[EachDeviceControls.Key][0];
