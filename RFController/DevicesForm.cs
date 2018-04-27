@@ -30,7 +30,7 @@ namespace RFController {
         Control Template;
         System.Timers.Timer t1;
         System.Timers.Timer t2;
-        NumericUpDown CurBright;
+        Control CurBright;
         int? LoopedDevKey;
 
         public DevicesForm() {
@@ -88,19 +88,17 @@ namespace RFController {
         private void T1_Elapsed(object sender, System.Timers.ElapsedEventArgs e) {
             int DevKey = ControlsHash[CurBright.GetHashCode()];
             RfDevice Device = DevBase.Data[DevKey][0];
-
             int DevBright = 0;
+            Int32.TryParse(CurBright.Text, out int result);
             if (Device.Type == NooDevType.PowerUnitF) { //Noo-F
-                DevBright = (int)((CurBright.Value / 100) * 255);
+                DevBright = ((result / 100) * 255);
                 if (DevBright != 0) {
                     Mtrf64.SendCmd(0, Mode.FTx, NooCmd.SetBrightness, Device.Addr, d0: DevBright);
                 }
-            }else if (Device.Type == NooDevType.PowerUnit) { //Noo
-                DevBright = (int)((CurBright.Value / 100) * 128);
+            } else if (Device.Type == NooDevType.PowerUnit) { //Noo
+                DevBright = ((result / 100) * 128);
                 //dev1.SendCmd(channel: DevChn, mode: 0, NooCmd.On);
-                if (CurBright.Value != 0) {
-                    Mtrf64.SendCmd(Device.Channel, Mode.Tx, NooCmd.SetBrightness, fmt: 1, d0: DevBright);
-                }
+                Mtrf64.SendCmd(Device.Channel, Mode.Tx, NooCmd.SetBrightness, fmt: 1, d0: DevBright);
             }
         }
 
@@ -133,7 +131,7 @@ namespace RFController {
                     flowLayoutPanel1.Controls.Add(c); //add controls
                     AllDevicesControls.Add(item, c);
                 }
-            }          
+            }
             //update info of each device
             foreach (var EachDeviceControls in AllDevicesControls) {
                 RfDevice Device = DevBase.Data[EachDeviceControls.Key][0];
@@ -158,8 +156,8 @@ namespace RFController {
                                     control.Hide();
                                 }
                             } else { control.Hide(); }
-                                break;
-                        case "OnBtn": 
+                            break;
+                        case "OnBtn":
                             if (Device.Type == NooDevType.PowerUnit ||
                                 Device.Type == NooDevType.PowerUnitF) {
 
@@ -186,22 +184,16 @@ namespace RFController {
                             }
                             break;
                         case "BrightBox":
+                            if (Device.Type == NooDevType.PowerUnit || Device.Type == NooDevType.PowerUnitF) {
+                                control.Visible = true;
+                                control.Text = (((decimal)Device.Bright / 255) * 100).ToString() + " %";
+                                int brightBoxHash = control.GetHashCode();
 
-                            //NumericUpDown bright = (NumericUpDown)control;
-                            //if (Device.Type != 0 &&
-                            //    Device.IsDimmable) {
-                            //    bright.Visible = true;
-                            //    if (bright.Value == 0) {
-                            //        bright.Value = ((decimal)Device.Bright / 255) * 100;
-                            //    }
-                            //    int brightBoxHash = control.GetHashCode();
-
-                            //    if (!ControlsHash.ContainsKey(brightBoxHash)) {
-                            //        ControlsHash.Add(brightBoxHash, EachDeviceControls.Key);
-                            //        bright.ValueChanged += Bright_ValueChanged; ;
-                            //    }
-                            /*} else */if (Device.Type == NooDevType.Sensor) {
-                                
+                                if (!ControlsHash.ContainsKey(brightBoxHash)) {
+                                    ControlsHash.Add(brightBoxHash, EachDeviceControls.Key);
+                                    control.MouseWheel += Bright_ValueChanged; ;
+                                }
+                            } else if (Device.Type == NooDevType.Sensor) {
                                 if (!TemperatureLog.Data.ContainsKey(EachDeviceControls.Key)) {
                                     TemperatureLog.Data.Add(EachDeviceControls.Key, new List<TempAtChannel>());
                                 }
@@ -216,9 +208,9 @@ namespace RFController {
                                     ControlsHash.Add(control.GetHashCode(), EachDeviceControls.Key);
                                     control.Click += ShowTemp_Click;
                                 }
-                            } else { 
+                            } else {
                                 control.Visible = false;
-                            }          
+                            }
                             break;
                         case "DimmerEn":
                             if (Device.Type == NooDevType.PowerUnit ||
@@ -242,17 +234,23 @@ namespace RFController {
 
         private void ShowTemp_Click(object sender, EventArgs e) {
             int DevKey = ControlsHash[sender.GetHashCode()];
-            if(tempGraphForm != null) {
+            if (tempGraphForm != null) {
                 tempGraphForm.Close();
             }
             tempGraphForm = new GraphForm(Mtrf64, TemperatureLog.Data[DevKey]);
             tempGraphForm.Show();
         }
 
-        private void Bright_ValueChanged(object sender, EventArgs e) {
-            t1.Stop();
-            CurBright = (NumericUpDown)sender;
-            t1.Start();
+        private void Bright_ValueChanged(object sender, MouseEventArgs e) {
+            Control c = (Control)sender;
+            string bright = c.Text.TrimEnd(' ', '%');
+            Int32.TryParse(bright, out int result);
+            if ((result > 0 || e.Delta > 0) && (e.Delta < 0 || result < 100)) {
+                c.Text = (result + (e.Delta / 120)).ToString() + " %";
+                t1.Stop();
+                CurBright = c;
+                t1.Start();
+            }
         }
 
         private void Cb_CheckedChanged(object sender, EventArgs e) {

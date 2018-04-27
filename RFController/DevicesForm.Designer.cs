@@ -33,6 +33,8 @@
             this.switchLoopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
             this.offTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
+            this.BrightBox = new System.Windows.Forms.Label();
+            this.StatePictBox = new System.Windows.Forms.PictureBox();
             this.TypeBox = new System.Windows.Forms.TextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.showLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -40,13 +42,11 @@
             this.Temperature_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewDeviceMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.StatePictBox = new System.Windows.Forms.PictureBox();
-            this.BrightBox = new System.Windows.Forms.Label();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
-            this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.StatePictBox)).BeginInit();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // flowLayoutPanel1
@@ -73,7 +73,7 @@
             this.groupBox1.MaximumSize = new System.Drawing.Size(135, 190);
             this.groupBox1.MinimumSize = new System.Drawing.Size(135, 0);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(135, 103);
+            this.groupBox1.Size = new System.Drawing.Size(135, 100);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "groupBox1";
@@ -86,24 +86,24 @@
             this.settingsToolStripMenuItem,
             this.switchLoopToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(166, 92);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(165, 92);
             // 
             // removeDeviceToolStripMenuItem
             // 
             this.removeDeviceToolStripMenuItem.Name = "removeDeviceToolStripMenuItem";
-            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.removeDeviceToolStripMenuItem.Text = "Remove Device";
             // 
             // firmwareVersionToolStripMenuItem
             // 
             this.firmwareVersionToolStripMenuItem.Name = "firmwareVersionToolStripMenuItem";
-            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.firmwareVersionToolStripMenuItem.Text = "Firmware Version";
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
             // switchLoopToolStripMenuItem
@@ -112,7 +112,7 @@
             this.onTimeToolStripMenuItem,
             this.offTimeToolStripMenuItem});
             this.switchLoopToolStripMenuItem.Name = "switchLoopToolStripMenuItem";
-            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.switchLoopToolStripMenuItem.Text = "Switch Loop";
             // 
             // onTimeToolStripMenuItem
@@ -126,6 +126,26 @@
             this.offTimeToolStripMenuItem.Name = "offTimeToolStripMenuItem";
             this.offTimeToolStripMenuItem.Size = new System.Drawing.Size(212, 23);
             this.offTimeToolStripMenuItem.Text = "Off Time";
+            // 
+            // BrightBox
+            // 
+            this.BrightBox.AutoSize = true;
+            this.BrightBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.BrightBox.Location = new System.Drawing.Point(25, 60);
+            this.BrightBox.Name = "BrightBox";
+            this.BrightBox.Size = new System.Drawing.Size(85, 24);
+            this.BrightBox.TabIndex = 16;
+            this.BrightBox.Text = "Br % / t C";
+            // 
+            // StatePictBox
+            // 
+            this.StatePictBox.BackColor = System.Drawing.Color.LightGreen;
+            this.StatePictBox.Location = new System.Drawing.Point(109, 7);
+            this.StatePictBox.Name = "StatePictBox";
+            this.StatePictBox.Size = new System.Drawing.Size(25, 23);
+            this.StatePictBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.StatePictBox.TabIndex = 15;
+            this.StatePictBox.TabStop = false;
             // 
             // TypeBox
             // 
@@ -184,26 +204,6 @@
             this.addNewDeviceMenuItem.Text = "Add new device";
             this.addNewDeviceMenuItem.Click += new System.EventHandler(this.AddNewDevice_MenuItem_Click);
             // 
-            // StatePictBox
-            // 
-            this.StatePictBox.BackColor = System.Drawing.Color.LightGreen;
-            this.StatePictBox.Location = new System.Drawing.Point(109, 7);
-            this.StatePictBox.Name = "StatePictBox";
-            this.StatePictBox.Size = new System.Drawing.Size(25, 23);
-            this.StatePictBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.StatePictBox.TabIndex = 15;
-            this.StatePictBox.TabStop = false;
-            // 
-            // BrightBox
-            // 
-            this.BrightBox.AutoSize = true;
-            this.BrightBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.BrightBox.Location = new System.Drawing.Point(16, 63);
-            this.BrightBox.Name = "BrightBox";
-            this.BrightBox.Size = new System.Drawing.Size(113, 24);
-            this.BrightBox.TabIndex = 16;
-            this.BrightBox.Text = "Bright/Temp";
-            // 
             // DevicesForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
@@ -219,9 +219,9 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.contextMenuStrip1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.StatePictBox)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.StatePictBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
