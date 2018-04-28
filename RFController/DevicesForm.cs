@@ -163,42 +163,42 @@ namespace RFController {
                                 }
                             } else { control.Hide(); }
                             break;
-                        case "OnBtn":
-                            if (Device.Type == NooDevType.PowerUnit ||
-                                Device.Type == NooDevType.PowerUnitF) {
+                        //case "OnBtn":
+                        //    if (Device.Type == NooDevType.PowerUnit ||
+                        //        Device.Type == NooDevType.PowerUnitF) {
 
-                                int onBtnHash = control.GetHashCode();
-                                if (!ControlsHash.ContainsKey(onBtnHash)) {
-                                    ControlsHash.Add(onBtnHash, EachDeviceControls.Key);
-                                    control.Click += OnBtn_Click;
-                                }
-                            } else {
-                                control.Visible = false;
-                            }
-                            break;
-                        case "OffBtn":
-                            if (Device.Type == NooDevType.PowerUnit ||
-                                Device.Type == NooDevType.PowerUnitF) {
+                        //        int onBtnHash = control.GetHashCode();
+                        //        if (!ControlsHash.ContainsKey(onBtnHash)) {
+                        //            ControlsHash.Add(onBtnHash, EachDeviceControls.Key);
+                        //            control.Click += OnBtn_Click;
+                        //        }
+                        //    } else {
+                        //        control.Visible = false;
+                        //    }
+                        //    break;
+                        //case "OffBtn":
+                        //    if (Device.Type == NooDevType.PowerUnit ||
+                        //        Device.Type == NooDevType.PowerUnitF) {
 
-                                int offBtnHash = control.GetHashCode();
-                                if (!ControlsHash.ContainsKey(offBtnHash)) {
-                                    ControlsHash.Add(offBtnHash, EachDeviceControls.Key);
-                                    control.Click += OffBtn_Click;
-                                }
-                            } else {
-                                control.Visible = false;
-                            }
-                            break;
+                        //        int offBtnHash = control.GetHashCode();
+                        //        if (!ControlsHash.ContainsKey(offBtnHash)) {
+                        //            ControlsHash.Add(offBtnHash, EachDeviceControls.Key);
+                        //            control.Click += OffBtn_Click;
+                        //        }
+                        //    } else {
+                        //        control.Visible = false;
+                        //    }
+                        //    break;
                         case "BrightBox":
                             if (Device.Type == NooDevType.PowerUnit || Device.Type == NooDevType.PowerUnitF) {
+                                int brightBoxHash = control.GetHashCode();
                                 control.Visible = true;
                                 float bright = ((float)Device.Bright / 255) * 100;
                                 control.Text = Round(bright).ToString() + " %";
-                                int brightBoxHash = control.GetHashCode();
 
                                 if (!ControlsHash.ContainsKey(brightBoxHash)) {
                                     ControlsHash.Add(brightBoxHash, EachDeviceControls.Key);
-                                    control.MouseWheel += Bright_ValueChanged; ;
+                                    control.MouseWheel += Bright_ValueChanged;
                                 }
                             } else if (Device.Type == NooDevType.Sensor) {
                                 if (!TemperatureLog.Data.ContainsKey(EachDeviceControls.Key)) {
