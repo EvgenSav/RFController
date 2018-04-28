@@ -33,7 +33,8 @@
             this.switchLoopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
             this.offTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
-            this.BrightBox = new System.Windows.Forms.Label();
+            this.TypeBox = new System.Windows.Forms.Label();
+            this.StateBox = new System.Windows.Forms.Label();
             this.StatePictBox = new System.Windows.Forms.PictureBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.showLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -41,7 +42,6 @@
             this.Temperature_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewDeviceMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.TypeBox = new System.Windows.Forms.Label();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
@@ -67,7 +67,7 @@
             this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox1.ContextMenuStrip = this.contextMenuStrip1;
             this.groupBox1.Controls.Add(this.TypeBox);
-            this.groupBox1.Controls.Add(this.BrightBox);
+            this.groupBox1.Controls.Add(this.StateBox);
             this.groupBox1.Controls.Add(this.StatePictBox);
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
             this.groupBox1.MaximumSize = new System.Drawing.Size(120, 190);
@@ -86,24 +86,24 @@
             this.settingsToolStripMenuItem,
             this.switchLoopToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(165, 92);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(166, 92);
             // 
             // removeDeviceToolStripMenuItem
             // 
             this.removeDeviceToolStripMenuItem.Name = "removeDeviceToolStripMenuItem";
-            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.removeDeviceToolStripMenuItem.Text = "Remove Device";
             // 
             // firmwareVersionToolStripMenuItem
             // 
             this.firmwareVersionToolStripMenuItem.Name = "firmwareVersionToolStripMenuItem";
-            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.firmwareVersionToolStripMenuItem.Text = "Firmware Version";
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
             // switchLoopToolStripMenuItem
@@ -112,7 +112,7 @@
             this.onTimeToolStripMenuItem,
             this.offTimeToolStripMenuItem});
             this.switchLoopToolStripMenuItem.Name = "switchLoopToolStripMenuItem";
-            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.switchLoopToolStripMenuItem.Text = "Switch Loop";
             // 
             // onTimeToolStripMenuItem
@@ -127,15 +127,26 @@
             this.offTimeToolStripMenuItem.Size = new System.Drawing.Size(212, 23);
             this.offTimeToolStripMenuItem.Text = "Off Time";
             // 
-            // BrightBox
+            // TypeBox
             // 
-            this.BrightBox.AutoSize = true;
-            this.BrightBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.BrightBox.Location = new System.Drawing.Point(25, 60);
-            this.BrightBox.Name = "BrightBox";
-            this.BrightBox.Size = new System.Drawing.Size(85, 24);
-            this.BrightBox.TabIndex = 16;
-            this.BrightBox.Text = "Br % / t C";
+            this.TypeBox.AutoSize = true;
+            this.TypeBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.TypeBox.Location = new System.Drawing.Point(9, 21);
+            this.TypeBox.MinimumSize = new System.Drawing.Size(80, 0);
+            this.TypeBox.Name = "TypeBox";
+            this.TypeBox.Size = new System.Drawing.Size(80, 13);
+            this.TypeBox.TabIndex = 17;
+            this.TypeBox.Text = "label1";
+            // 
+            // StateBox
+            // 
+            this.StateBox.AutoSize = true;
+            this.StateBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.StateBox.Location = new System.Drawing.Point(25, 60);
+            this.StateBox.Name = "StateBox";
+            this.StateBox.Size = new System.Drawing.Size(85, 24);
+            this.StateBox.TabIndex = 16;
+            this.StateBox.Text = "Br % / t C";
             // 
             // StatePictBox
             // 
@@ -171,41 +182,30 @@
             // ShowLog_MenuItem
             // 
             this.ShowLog_MenuItem.Name = "ShowLog_MenuItem";
-            this.ShowLog_MenuItem.Size = new System.Drawing.Size(158, 22);
+            this.ShowLog_MenuItem.Size = new System.Drawing.Size(180, 22);
             this.ShowLog_MenuItem.Text = "ShowLog";
             this.ShowLog_MenuItem.Click += new System.EventHandler(this.ShowLog_MenuItem_Click);
             // 
             // Temperature_MenuItem
             // 
             this.Temperature_MenuItem.Name = "Temperature_MenuItem";
-            this.Temperature_MenuItem.Size = new System.Drawing.Size(158, 22);
+            this.Temperature_MenuItem.Size = new System.Drawing.Size(180, 22);
             this.Temperature_MenuItem.Text = "Temperature";
             this.Temperature_MenuItem.Click += new System.EventHandler(this.Temperature_MenuItem_Click);
             // 
             // serviceToolStripMenuItem
             // 
             this.serviceToolStripMenuItem.Name = "serviceToolStripMenuItem";
-            this.serviceToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.serviceToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.serviceToolStripMenuItem.Text = "Service";
             this.serviceToolStripMenuItem.Click += new System.EventHandler(this.ServiceToolStrip_MenuItem_Click);
             // 
             // addNewDeviceMenuItem
             // 
             this.addNewDeviceMenuItem.Name = "addNewDeviceMenuItem";
-            this.addNewDeviceMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.addNewDeviceMenuItem.Size = new System.Drawing.Size(180, 22);
             this.addNewDeviceMenuItem.Text = "Add new device";
             this.addNewDeviceMenuItem.Click += new System.EventHandler(this.AddNewDevice_MenuItem_Click);
-            // 
-            // TypeBox
-            // 
-            this.TypeBox.AutoSize = true;
-            this.TypeBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.TypeBox.Location = new System.Drawing.Point(9, 21);
-            this.TypeBox.MinimumSize = new System.Drawing.Size(70, 0);
-            this.TypeBox.Name = "TypeBox";
-            this.TypeBox.Size = new System.Drawing.Size(70, 13);
-            this.TypeBox.TabIndex = 17;
-            this.TypeBox.Text = "label1";
             // 
             // DevicesForm
             // 
@@ -248,7 +248,7 @@
         private System.Windows.Forms.ToolStripTextBox onTimeToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox offTimeToolStripMenuItem;
         private System.Windows.Forms.PictureBox StatePictBox;
-        private System.Windows.Forms.Label BrightBox;
+        private System.Windows.Forms.Label StateBox;
         private System.Windows.Forms.Label TypeBox;
     }
 }

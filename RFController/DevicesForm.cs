@@ -163,33 +163,8 @@ namespace RFController {
                                 }
                             } else { control.Hide(); }
                             break;
-                        //case "OnBtn":
-                        //    if (Device.Type == NooDevType.PowerUnit ||
-                        //        Device.Type == NooDevType.PowerUnitF) {
-
-                        //        int onBtnHash = control.GetHashCode();
-                        //        if (!ControlsHash.ContainsKey(onBtnHash)) {
-                        //            ControlsHash.Add(onBtnHash, EachDeviceControls.Key);
-                        //            control.Click += OnBtn_Click;
-                        //        }
-                        //    } else {
-                        //        control.Visible = false;
-                        //    }
-                        //    break;
-                        //case "OffBtn":
-                        //    if (Device.Type == NooDevType.PowerUnit ||
-                        //        Device.Type == NooDevType.PowerUnitF) {
-
-                        //        int offBtnHash = control.GetHashCode();
-                        //        if (!ControlsHash.ContainsKey(offBtnHash)) {
-                        //            ControlsHash.Add(offBtnHash, EachDeviceControls.Key);
-                        //            control.Click += OffBtn_Click;
-                        //        }
-                        //    } else {
-                        //        control.Visible = false;
-                        //    }
-                        //    break;
-                        case "BrightBox":
+                        
+                        case "StateBox":
                             if (Device.Type == NooDevType.PowerUnit || Device.Type == NooDevType.PowerUnitF) {
                                 int brightBoxHash = control.GetHashCode();
                                 control.Visible = true;
@@ -198,9 +173,17 @@ namespace RFController {
 
                                 if (!ControlsHash.ContainsKey(brightBoxHash)) {
                                     ControlsHash.Add(brightBoxHash, EachDeviceControls.Key);
+                                    control.MouseEnter += Control_MouseEnter;
+                                    control.MouseLeave += Control_MouseLeave;
                                     control.MouseWheel += Bright_ValueChanged;
+                                    control.MouseClick += Device_MouseClick;
                                 }
                             } else if (Device.Type == NooDevType.Sensor) {
+                                switch (Device.DevType) {
+                                    
+                                    default:
+                                        break;
+                                }
                                 if (!TemperatureLog.Data.ContainsKey(EachDeviceControls.Key)) {
                                     TemperatureLog.Data.Add(EachDeviceControls.Key, new List<TempAtChannel>());
                                 }
@@ -239,6 +222,15 @@ namespace RFController {
             }
         }
 
+        private void Control_MouseLeave(object sender, EventArgs e) {
+            this.ActiveControl = null;
+        }
+
+        private void Control_MouseEnter(object sender, EventArgs e) {
+            Label lb = (Label)sender;
+            lb.Focus();
+        }
+
         string GetDeviceType(RfDevice dev) {
             string res="";
             switch (dev.Type) {
@@ -254,15 +246,36 @@ namespace RFController {
                             res = "PT111";
                             break;
                         case 3:
+                            res = "PM111";
+                            break;
+                        case 5:
                             res = "PM112";
                             break;
                     }
                     break;
                 case NooDevType.PowerUnitF:
                     switch (dev.DevType) {
+                        case 0:
+                            res = "MTRF-64";
+                            break;
+                        case 1:
+                            res = "SLF-1-300";
+                            break;
+                        case 2:
+                            res = "SRF-10-1000";
+                            break;
+                        case 3:
+                            res = "SRF-1-3000";
+                            break;
+                        case 4:
+                            res = "SRF-1-3000M";
+                            break;
                         case 5:
                             res = "SUF-1-300";
                             break;
+                        case 6:
+                            res = "SRF-1-3000T";
+                            break;                        
                     }
                     break;
             }           
@@ -273,6 +286,7 @@ namespace RFController {
             if ((val - (int)val) > 0.5) return (int)val + 1;
             else return (int)val;
         }
+
         private void ShowTemp_Click(object sender, EventArgs e) {
             int DevKey = ControlsHash[sender.GetHashCode()];
             if (tempGraphForm != null) {
@@ -604,6 +618,12 @@ namespace RFController {
         }
         #endregion
 
+        public static class Sensors {
+            public const int PT112 = 1;
+            public const int PT111 = 2;
+            public const int PM111 = 3;
+            public const int PM112 = 5;
 
+        }
     }
 }
