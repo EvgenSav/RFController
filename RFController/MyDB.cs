@@ -15,7 +15,21 @@ namespace RFController {
         public MyDB() {
             Data = new SortedDictionary<TKey, List<TValue>>();
         }
-        //public TValue Latest { get; set; }
+
+        //public List<TValue> this[TKey key] {
+        //    get {
+        //        if (Data.ContainsKey(key)) {
+        //            return Data[key];
+        //        } else {
+        //            return new List<TValue>();
+        //        }
+        //    } 
+        //}
+
+        //public bool ContainsKey(TKey key) {
+        //    return Data.ContainsKey(key);
+        //}
+
         public void Add(TKey channel, TValue data) {
             if (Data.ContainsKey(channel)) {
                 Data[channel].Add(data);

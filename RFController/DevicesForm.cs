@@ -180,24 +180,43 @@ namespace RFController {
                                 }
                             } else if (Device.Type == NooDevType.Sensor) {
                                 switch (Device.DevType) {
-                                    
+                                    case Sensors.PT112:
+                                        if (!TemperatureLog.Data.ContainsKey(EachDeviceControls.Key)) {
+                                            TemperatureLog.Data.Add(EachDeviceControls.Key, new List<TempAtChannel>());
+                                        }
+                                        int dataCounts = TemperatureLog.Data[EachDeviceControls.Key].Count;
+                                        if (dataCounts > 0) {
+                                            TempAtChannel temp = TemperatureLog.Data[EachDeviceControls.Key][dataCounts - 1];
+                                            control.Text = temp.ToString();
+                                        } else {
+                                            control.Text = "no data";
+                                        }
+                                        if (!ControlsHash.ContainsKey(control.GetHashCode())) {
+                                            ControlsHash.Add(control.GetHashCode(), EachDeviceControls.Key);
+                                            control.Click += ShowTemp_Click;
+                                        }
+                                        break;
+                                    case Sensors.PM112:
+                                        if (!TemperatureLog.Data.ContainsKey(EachDeviceControls.Key)) {
+                                            TemperatureLog.Data.Add(EachDeviceControls.Key, new List<TempAtChannel>());
+                                        }
+                                        int data_counts = TemperatureLog.Data[EachDeviceControls.Key].Count;
+                                        if (data_counts > 0) {
+                                            TempAtChannel temp = TemperatureLog.Data[EachDeviceControls.Key][data_counts - 1];
+                                            
+                                            control.Text = temp.CurrentTime.ToShortTimeString();
+                                        } else {
+                                            control.Text = "no data";
+                                        }
+                                        if (!ControlsHash.ContainsKey(control.GetHashCode())) {
+                                            ControlsHash.Add(control.GetHashCode(), EachDeviceControls.Key);
+                                            control.Click += ShowTemp_Click;
+                                        }
+                                        break;
                                     default:
                                         break;
                                 }
-                                if (!TemperatureLog.Data.ContainsKey(EachDeviceControls.Key)) {
-                                    TemperatureLog.Data.Add(EachDeviceControls.Key, new List<TempAtChannel>());
-                                }
-                                int dataCounts = TemperatureLog.Data[EachDeviceControls.Key].Count;
-                                if (dataCounts > 0) {
-                                    TempAtChannel temp = TemperatureLog.Data[EachDeviceControls.Key][dataCounts - 1];
-                                    control.Text = temp.ToString();
-                                } else {
-                                    //bright.Value = "no data";
-                                }
-                                if (!ControlsHash.ContainsKey(control.GetHashCode())) {
-                                    ControlsHash.Add(control.GetHashCode(), EachDeviceControls.Key);
-                                    control.Click += ShowTemp_Click;
-                                }
+                                
                             } else {
                                 control.Visible = false;
                             }
@@ -325,41 +344,6 @@ namespace RFController {
             BeginInvoke(FormUpdater);
         }
 
-        private void OnBtn_Click(object sender, EventArgs e) {
-            //MessageBox.Show("This item binded to channel: " +
-            //    BtnsHash[sender.GetHashCode()].ToString());
-            int DevKey = ControlsHash[sender.GetHashCode()]; //get Key of device
-
-            int DevType = DevBase.Data[DevKey][0].Type;
-            int DevAddr = DevBase.Data[DevKey][0].Addr;
-            int DevChn = DevBase.Data[DevKey][0].Channel;
-
-            int BrightControlIdx = AllDevicesControls[DevKey].Controls.IndexOfKey("BrightBox");
-            NumericUpDown bright = (NumericUpDown)AllDevicesControls[DevKey].Controls[BrightControlIdx];
-            if (DevType == 2) { //Noo-F
-                Mtrf64.SendCmd(0, 2, NooCmd.On, DevAddr);
-            } else if (DevType == 1) { //Noo
-                Mtrf64.SendCmd(channel: DevChn, mode: 0, NooCmd.On);
-            }
-        }
-
-
-        private void OffBtn_Click(object sender, EventArgs e) {
-            //MessageBox.Show("This item binded to channel: " + 
-            //    BtnsHash[sender.GetHashCode()].ToString());
-            int DevKey = ControlsHash[sender.GetHashCode()];
-            int DevType = DevBase.Data[DevKey][0].Type;
-            int DevAddr = DevBase.Data[DevKey][0].Addr;
-            int DevChn = DevBase.Data[DevKey][0].Channel;
-
-            if (DevType == 2) {         //Noo-F
-                Mtrf64.SendCmd(0, 2, NooCmd.Off, DevAddr);
-            } else if (DevType == 1) {  //Noo
-                Mtrf64.SendCmd(DevChn, 0, NooCmd.Off);
-            }
-        }
-
-
         private Control GetCopy(Control c, int i) {
             Type t;
             ConstructorInfo[] ci;
@@ -454,6 +438,7 @@ namespace RFController {
                     ContainsDevice = true;
                 }
             }
+
             if (ContainsDevice)
                 switch (Mtrf64.rxBuf.Cmd) {
                     case NooCmd.On:
@@ -480,6 +465,15 @@ namespace RFController {
                         TemperatureLog.Add(Mtrf64.rxBuf.Ch,
                         new TempAtChannel(DateTime.Now, Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]));
                         break;
+                    case NooCmd.TemporaryOn:
+                        int DevKey = Mtrf64.rxBuf.Ch;
+                        int count = TemperatureLog.Data[DevKey].Count;
+                        DateTime previous = TemperatureLog.Data[DevKey][count - 1].CurrentTime;
+                        if (DateTime.Now.Subtract(previous).Seconds > 4) {
+                            TemperatureLog.Add(Mtrf64.rxBuf.Ch, new TempAtChannel(DateTime.Now, Mtrf64.rxBuf.D0));
+                        }
+                        break;
+
                     case NooCmd.SendState:
                         //if(dev1.rxBuf.D0 == 5) { //suf-1-300
                         switch (Mtrf64.rxBuf.Fmt) {
