@@ -119,9 +119,9 @@ namespace RFController {
             }
         }
         public int OpenPort(string pName) {
-            if (pName != null) {
-                serialPort.PortName = pName;
-                if (!serialPort.IsOpen) {                    
+            if (pName != null) {                
+                if (!serialPort.IsOpen) {
+                    serialPort.PortName = pName;
                     serialPort.Open();
                 }
                 return 0;
