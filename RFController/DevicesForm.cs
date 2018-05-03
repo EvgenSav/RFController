@@ -55,7 +55,7 @@ namespace RFController {
             flowLayoutPanel1.Controls.Remove(groupBox1);
 
             AllDevicesControls = new List<SortedDictionary<int, Control>>();
-            AllDevicesControls.Add (new SortedDictionary<int, Control>());
+            AllDevicesControls.Add(new SortedDictionary<int, Control>());
             foreach (var item in DevBase.Data) {
                 Control c = GetCopy(Template, 0);
                 c.Text = item.Value[0].Name;
@@ -79,7 +79,7 @@ namespace RFController {
 
         //initialize Rooms with devices controls
         void InitRooms() {
-            var groupedDevices = from r in DevBase.Data
+            var groupedByRoomDevices = from r in DevBase.Data
                                  where r.Value[r.Value.Count - 1].Room != null
                                  select new {
                                      Name = r.Value[r.Value.Count - 1].Room,
@@ -89,27 +89,22 @@ namespace RFController {
                                  where devs.Dev.Room != null
                                  group devs by devs.Dev.Room;
             int tabIdx = 0;
-
-            foreach (var room in groupedDevices) {
+            foreach (var room in groupedByRoomDevices) {
                 TabControl.TabPageCollection tabPages = tabControl1.TabPages;
                 tabPages.Add(room.Key);
                 AllDevicesControls.Add(new SortedDictionary<int, Control>());
-                //.Add(room.Key);
                 tabIdx++;
-                //int ctrlIdx = 0;
+                tabPages[tabIdx].BackColor = Color.White;
                 tabPages[tabIdx].Controls.Add(new FlowLayoutPanel {
                     AutoSize = flowLayoutPanel1.AutoSize,
                     AutoSizeMode = flowLayoutPanel1.AutoSizeMode,
-                    MinimumSize = flowLayoutPanel1.MinimumSize,
-                    MaximumSize = flowLayoutPanel1.MaximumSize,
-                    BackColor = flowLayoutPanel1.BackColor
+                    BackColor = flowLayoutPanel1.BackColor,
+                    Location = flowLayoutPanel1.Location
                 });
                 foreach (var item in room) {
                     Control devControl = GetCopy(AllDevicesControls[0][item.Key], 0);
                     tabControl1.TabPages[tabIdx].Controls[0].Controls.Add(devControl);
                     AllDevicesControls[tabIdx].Add(item.Key, devControl);
-                    //tabControl1.TabPages[tabIdx].Controls[0].Controls.Add(AllDevicesControls[item.Key]);
-                    //ctrlIdx++;
                 }
             }
         }
@@ -284,6 +279,7 @@ namespace RFController {
             s1.Height = s1.Height + 35;
             s1.Width = s1.Width + 15;
             tabControl1.Size = s1;
+
         }
 
         //reset focus from Bright Regulating Label        
@@ -383,7 +379,7 @@ namespace RFController {
         }
 
 
-        
+
 
         private void Dev1_NewDataReceived(object sender, EventArgs e) {
             ParseIncomingData();
@@ -652,11 +648,23 @@ namespace RFController {
                 "Firmware version: {1}", rf.DevType, rf.FirmwareVer);
             MessageBox.Show(res);
         }
+
         private void Remove_Click(object sender, EventArgs e) {
-            int hash = sender.GetHashCode();
-            DevBase.Data.Remove(ControlsHash[hash]);
-            UpdateForm(0);
+            int Devkey = ControlsHash[sender.GetHashCode()];
+
+            foreach (TabPage PanelAtPage in tabControl1.TabPages) {
+                if (AllDevicesControls[tabControl1.TabPages.IndexOf(PanelAtPage)].ContainsKey(Devkey)) {    //if this tab contains element, that we want to delete
+                    Control toDelete = AllDevicesControls[tabControl1.TabPages.IndexOf(PanelAtPage)][Devkey];
+                    PanelAtPage.Controls[0].Controls.Remove(toDelete);
+                }
+            }
+            foreach (var ControlsAtPage in AllDevicesControls) {
+                ControlsAtPage.Remove(Devkey);
+            }
+            DevBase.Data.Remove(Devkey);
+            UpdateForm(SelectedTab);
         }
+
         private void SwitchLoop_Click(object sender, EventArgs e) {
             ToolStripMenuItem tmi = (ToolStripMenuItem)sender;
             if (!tmi.Checked) {
@@ -667,7 +675,6 @@ namespace RFController {
                 tmi.Checked = false;
                 t2.Stop();
             }
-
         }
         #endregion
 
