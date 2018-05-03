@@ -42,11 +42,15 @@
             this.Temperature_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewDeviceMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.StatePictBox)).BeginInit();
             this.menuStrip1.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
             this.SuspendLayout();
             // 
             // flowLayoutPanel1
@@ -54,7 +58,7 @@
             this.flowLayoutPanel1.AutoSize = true;
             this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanel1.Controls.Add(this.groupBox1);
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(12, 29);
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 6);
             this.flowLayoutPanel1.MaximumSize = new System.Drawing.Size(1100, 0);
             this.flowLayoutPanel1.MinimumSize = new System.Drawing.Size(150, 250);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
@@ -164,7 +168,7 @@
             this.showLogToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(764, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(954, 24);
             this.menuStrip1.TabIndex = 14;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -182,39 +186,62 @@
             // ShowLog_MenuItem
             // 
             this.ShowLog_MenuItem.Name = "ShowLog_MenuItem";
-            this.ShowLog_MenuItem.Size = new System.Drawing.Size(180, 22);
+            this.ShowLog_MenuItem.Size = new System.Drawing.Size(158, 22);
             this.ShowLog_MenuItem.Text = "ShowLog";
             this.ShowLog_MenuItem.Click += new System.EventHandler(this.ShowLog_MenuItem_Click);
             // 
             // Temperature_MenuItem
             // 
             this.Temperature_MenuItem.Name = "Temperature_MenuItem";
-            this.Temperature_MenuItem.Size = new System.Drawing.Size(180, 22);
+            this.Temperature_MenuItem.Size = new System.Drawing.Size(158, 22);
             this.Temperature_MenuItem.Text = "Temperature";
             this.Temperature_MenuItem.Click += new System.EventHandler(this.Temperature_MenuItem_Click);
             // 
             // serviceToolStripMenuItem
             // 
             this.serviceToolStripMenuItem.Name = "serviceToolStripMenuItem";
-            this.serviceToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.serviceToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.serviceToolStripMenuItem.Text = "Service";
             this.serviceToolStripMenuItem.Click += new System.EventHandler(this.ServiceToolStrip_MenuItem_Click);
             // 
             // addNewDeviceMenuItem
             // 
             this.addNewDeviceMenuItem.Name = "addNewDeviceMenuItem";
-            this.addNewDeviceMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addNewDeviceMenuItem.Size = new System.Drawing.Size(158, 22);
             this.addNewDeviceMenuItem.Text = "Add new device";
             this.addNewDeviceMenuItem.Click += new System.EventHandler(this.AddNewDevice_MenuItem_Click);
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Location = new System.Drawing.Point(6, 27);
+            this.tabControl1.Multiline = true;
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.Padding = new System.Drawing.Point(3, 3);
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(260, 314);
+            this.tabControl1.TabIndex = 15;
+            this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.flowLayoutPanel1);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(252, 288);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "All";
+            this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // DevicesForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(764, 555);
+            this.ClientSize = new System.Drawing.Size(954, 555);
+            this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.menuStrip1);
-            this.Controls.Add(this.flowLayoutPanel1);
             this.Name = "DevicesForm";
             this.Text = "RFController - Devices";
             this.flowLayoutPanel1.ResumeLayout(false);
@@ -225,6 +252,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.StatePictBox)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -250,5 +280,7 @@
         private System.Windows.Forms.PictureBox StatePictBox;
         private System.Windows.Forms.Label StateBox;
         private System.Windows.Forms.Label TypeBox;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
     }
 }

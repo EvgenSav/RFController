@@ -80,5 +80,6 @@ namespace RFController {
         public int DimCorrLvlHi { get; set; }
         public int DimCorrLvlLow { get; set; }
         public int OnLvl { get; set; }
+        public string Room { get; set; }
     }
 }
