@@ -27,6 +27,8 @@ namespace RFController {
         Dictionary<int, int> ControlsHash;
         MTRF Mtrf64;
         List<SortedDictionary<int, Control>> AllDevicesControls;
+        List<string> Rooms;
+
         Control Template;
         System.Timers.Timer t1;
         System.Timers.Timer t2;
@@ -55,30 +57,32 @@ namespace RFController {
             flowLayoutPanel1.Controls.Remove(groupBox1);
 
             AllDevicesControls = new List<SortedDictionary<int, Control>>();
-            AllDevicesControls.Add(new SortedDictionary<int, Control>());
-            foreach (var item in DevBase.Data) {
-                Control c = GetCopy(Template, 0);
-                c.Text = item.Value[0].Name;
-                flowLayoutPanel1.Controls.Add(c);
-                AllDevicesControls[0].Add(item.Key, c);
-            }
-
+            
+            Rooms = new List<string>();
             ControlsHash = new Dictionary<int, int>();
 
             Mtrf64.NewDataReceived += Dev1_NewDataReceived;
             this.FormClosing += DevicesForm_FormClosing;
 
             FormUpdater = new Action<int>(UpdateForm);
-            UpdateForm(0);
+            
             t1 = new System.Timers.Timer { AutoReset = false, Interval = 500 };
             t1.Elapsed += T1_Elapsed;
             t2 = new System.Timers.Timer { AutoReset = true, Interval = 500 };
             t2.Elapsed += T2_Elapsed;
             InitRooms();
+            UpdateForm(0);
         }
 
         //initialize Rooms with devices controls
         void InitRooms() {
+            //init room All(tab idx = 0)
+            AllDevicesControls.Add(new SortedDictionary<int, Control>());
+            foreach (var item in DevBase.Data) {
+                Control c = GetCopy(Template, 0);
+                flowLayoutPanel1.Controls.Add(c);
+                AllDevicesControls[0].Add(item.Key, c);
+            }
             var groupedByRoomDevices = from r in DevBase.Data
                                  where r.Value[r.Value.Count - 1].Room != null
                                  select new {
@@ -89,12 +93,15 @@ namespace RFController {
                                  where devs.Dev.Room != null
                                  group devs by devs.Dev.Room;
             int tabIdx = 0;
+
             foreach (var room in groupedByRoomDevices) {
                 TabControl.TabPageCollection tabPages = tabControl1.TabPages;
                 tabPages.Add(room.Key);
+                Rooms.Add(room.Key);
                 AllDevicesControls.Add(new SortedDictionary<int, Control>());
                 tabIdx++;
                 tabPages[tabIdx].BackColor = Color.White;
+
                 tabPages[tabIdx].Controls.Add(new FlowLayoutPanel {
                     AutoSize = flowLayoutPanel1.AutoSize,
                     AutoSizeMode = flowLayoutPanel1.AutoSizeMode,
@@ -610,11 +617,13 @@ namespace RFController {
             }
         }
 
-        private void AddNewDevice_MenuItem_Click(object sender, EventArgs e) {
-            addNewDevForm = new AddNewDevForm(DevBase, Mtrf64);
+        private void AddNewDevice_MenuItem_Click(object sender, EventArgs e) { 
+            addNewDevForm = new AddNewDevForm(DevBase, Mtrf64, Rooms);
             addNewDevForm.Show();
             addNewDevForm.FormClosed += (_sender, args) => {
-                this.UpdateForm(0);
+                int devKey = FindDifferencies();
+                AddControl(devKey);
+                this.UpdateForm(SelectedTab);
             };
         }
         private void ServiceToolStrip_MenuItem_Click(object sender, EventArgs e) {
@@ -649,21 +658,58 @@ namespace RFController {
             MessageBox.Show(res);
         }
 
+        void AddControl(int devKeyToAdd) {
+            string roomToAdd = DevBase.Data[devKeyToAdd][0].Room;
+            int roomIdx = Rooms.IndexOf(roomToAdd) + 1;
+            Control devControl = GetCopy(Template, 0);
+            AllDevicesControls[roomIdx].Add(devKeyToAdd, devControl);
+            tabControl1.TabPages[roomIdx].Controls[0].Controls.Add(devControl);
+
+            devControl = GetCopy(Template, 0);
+            AllDevicesControls[0].Add(devKeyToAdd, devControl);
+            tabControl1.TabPages[0].Controls[0].Controls.Add(devControl);
+        }
+        void RemoveControl(int devKey) {
+            //foreach (int devKeyToRemove in keysToRemove) {
+            //    Control toDelete = DevsInRoom[devKeyToRemove];
+            //    int curRoomIdx = AllDevicesControls.IndexOf(DevsInRoom);
+            //    tabControl1.TabPages[curRoomIdx].Controls[0].Controls.Remove(toDelete);
+            //    DevsInRoom.Remove(devKeyToRemove);
+            //}
+        }
+
+        int FindDifferencies() {
+            foreach (var DevsInRoom in AllDevicesControls) {
+                IEnumerable<int> keysToAdd    = DevBase.Data.Keys.Except(DevsInRoom.Keys);
+                if (keysToAdd.Count() != 0) {
+                    return keysToAdd.First();
+                }
+
+                IEnumerable<int> keysToRemove = DevsInRoom.Keys.Except(DevBase.Data.Keys);
+                if (keysToRemove.Count() != 0) {
+                    return keysToAdd.First();
+                }                
+            }
+            return 0;
+        }
+
         private void Remove_Click(object sender, EventArgs e) {
             int Devkey = ControlsHash[sender.GetHashCode()];
 
-            foreach (TabPage PanelAtPage in tabControl1.TabPages) {
-                if (AllDevicesControls[tabControl1.TabPages.IndexOf(PanelAtPage)].ContainsKey(Devkey)) {    //if this tab contains element, that we want to delete
-                    Control toDelete = AllDevicesControls[tabControl1.TabPages.IndexOf(PanelAtPage)][Devkey];
-                    PanelAtPage.Controls[0].Controls.Remove(toDelete);
-                }
-            }
-            foreach (var ControlsAtPage in AllDevicesControls) {
-                ControlsAtPage.Remove(Devkey);
-            }
+            //foreach (TabPage PanelAtPage in tabControl1.TabPages) {
+            //    if (AllDevicesControls[tabControl1.TabPages.IndexOf(PanelAtPage)].ContainsKey(Devkey)) {    //if this tab contains element, that we want to delete
+            //        Control toDelete = AllDevicesControls[tabControl1.TabPages.IndexOf(PanelAtPage)][Devkey];
+            //        PanelAtPage.Controls[0].Controls.Remove(toDelete);
+            //    }
+            //}
+            //foreach (var ControlsAtPage in AllDevicesControls) {
+            //    ControlsAtPage.Remove(Devkey);
+            //}
             DevBase.Data.Remove(Devkey);
-            UpdateForm(SelectedTab);
-        }
+            int devKey = FindDifferencies();
+            RemoveControl(devKey);
+            UpdateForm(SelectedTab);            
+            }
 
         private void SwitchLoop_Click(object sender, EventArgs e) {
             ToolStripMenuItem tmi = (ToolStripMenuItem)sender;

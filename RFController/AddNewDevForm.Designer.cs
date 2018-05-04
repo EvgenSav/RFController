@@ -43,6 +43,8 @@
             this.NoStep5Btn = new System.Windows.Forms.Button();
             this.Step6ToolTip = new System.Windows.Forms.Label();
             this.OkBtn = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.RoomBox = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // DevNameBox
@@ -78,7 +80,7 @@
             // 
             this.Step2ToolTip.AutoSize = true;
             this.Step2ToolTip.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.Step2ToolTip.Location = new System.Drawing.Point(12, 66);
+            this.Step2ToolTip.Location = new System.Drawing.Point(12, 64);
             this.Step2ToolTip.Name = "Step2ToolTip";
             this.Step2ToolTip.Size = new System.Drawing.Size(181, 17);
             this.Step2ToolTip.TabIndex = 5;
@@ -88,7 +90,7 @@
             // 
             this.Step3ToolTip.AutoSize = true;
             this.Step3ToolTip.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.Step3ToolTip.Location = new System.Drawing.Point(10, 129);
+            this.Step3ToolTip.Location = new System.Drawing.Point(13, 189);
             this.Step3ToolTip.MaximumSize = new System.Drawing.Size(190, 70);
             this.Step3ToolTip.Name = "Step3ToolTip";
             this.Step3ToolTip.Size = new System.Drawing.Size(190, 34);
@@ -97,7 +99,7 @@
             // 
             // BindBtn
             // 
-            this.BindBtn.Location = new System.Drawing.Point(11, 199);
+            this.BindBtn.Location = new System.Drawing.Point(13, 264);
             this.BindBtn.Name = "BindBtn";
             this.BindBtn.Size = new System.Drawing.Size(188, 25);
             this.BindBtn.TabIndex = 17;
@@ -109,7 +111,7 @@
             // 
             this.Step4Tooltip.AutoSize = true;
             this.Step4Tooltip.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.Step4Tooltip.Location = new System.Drawing.Point(12, 172);
+            this.Step4Tooltip.Location = new System.Drawing.Point(14, 237);
             this.Step4Tooltip.Name = "Step4Tooltip";
             this.Step4Tooltip.Size = new System.Drawing.Size(125, 17);
             this.Step4Tooltip.TabIndex = 18;
@@ -155,7 +157,7 @@
             // 
             this.Status.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.Status.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.Status.Location = new System.Drawing.Point(0, 450);
+            this.Status.Location = new System.Drawing.Point(0, 512);
             this.Status.Name = "Status";
             this.Status.Size = new System.Drawing.Size(209, 23);
             this.Status.TabIndex = 25;
@@ -165,7 +167,7 @@
             // 
             this.Step5ToolTip.AutoSize = true;
             this.Step5ToolTip.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.Step5ToolTip.Location = new System.Drawing.Point(13, 236);
+            this.Step5ToolTip.Location = new System.Drawing.Point(15, 301);
             this.Step5ToolTip.MaximumSize = new System.Drawing.Size(180, 0);
             this.Step5ToolTip.Name = "Step5ToolTip";
             this.Step5ToolTip.Size = new System.Drawing.Size(178, 51);
@@ -174,7 +176,7 @@
             // 
             // YesStep5Btn
             // 
-            this.YesStep5Btn.Location = new System.Drawing.Point(16, 300);
+            this.YesStep5Btn.Location = new System.Drawing.Point(18, 365);
             this.YesStep5Btn.Name = "YesStep5Btn";
             this.YesStep5Btn.Size = new System.Drawing.Size(52, 25);
             this.YesStep5Btn.TabIndex = 27;
@@ -184,7 +186,7 @@
             // 
             // NoStep5Btn
             // 
-            this.NoStep5Btn.Location = new System.Drawing.Point(142, 300);
+            this.NoStep5Btn.Location = new System.Drawing.Point(144, 365);
             this.NoStep5Btn.Name = "NoStep5Btn";
             this.NoStep5Btn.Size = new System.Drawing.Size(52, 25);
             this.NoStep5Btn.TabIndex = 28;
@@ -196,7 +198,7 @@
             // 
             this.Step6ToolTip.AutoSize = true;
             this.Step6ToolTip.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.Step6ToolTip.Location = new System.Drawing.Point(11, 333);
+            this.Step6ToolTip.Location = new System.Drawing.Point(13, 398);
             this.Step6ToolTip.MaximumSize = new System.Drawing.Size(180, 0);
             this.Step6ToolTip.Name = "Step6ToolTip";
             this.Step6ToolTip.Size = new System.Drawing.Size(178, 68);
@@ -206,7 +208,7 @@
             // 
             // OkBtn
             // 
-            this.OkBtn.Location = new System.Drawing.Point(9, 413);
+            this.OkBtn.Location = new System.Drawing.Point(11, 478);
             this.OkBtn.Name = "OkBtn";
             this.OkBtn.Size = new System.Drawing.Size(180, 25);
             this.OkBtn.TabIndex = 30;
@@ -214,12 +216,34 @@
             this.OkBtn.UseVisualStyleBackColor = true;
             this.OkBtn.Click += new System.EventHandler(this.OkBtn_Click);
             // 
-            // AddNewForm
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label1.Location = new System.Drawing.Point(13, 124);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(141, 17);
+            this.label1.TabIndex = 31;
+            this.label1.Text = "Step 3. Choose room";
+            // 
+            // RoomBox
+            // 
+            this.RoomBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.RoomBox.FormattingEnabled = true;
+            this.RoomBox.Location = new System.Drawing.Point(9, 150);
+            this.RoomBox.Name = "RoomBox";
+            this.RoomBox.Size = new System.Drawing.Size(189, 24);
+            this.RoomBox.TabIndex = 32;
+            this.RoomBox.SelectionChangeCommitted += new System.EventHandler(this.RoomBox_SelectionChangeCommitted);
+            // 
+            // AddNewDevForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(209, 473);
+            this.ClientSize = new System.Drawing.Size(209, 535);
+            this.Controls.Add(this.RoomBox);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.OkBtn);
             this.Controls.Add(this.Step6ToolTip);
             this.Controls.Add(this.NoStep5Btn);
@@ -233,8 +257,8 @@
             this.Controls.Add(this.Step2ToolTip);
             this.Controls.Add(this.DevNameBox);
             this.Controls.Add(this.Step1ToolTip);
-            this.MinimumSize = new System.Drawing.Size(225, 130);
-            this.Name = "AddNewForm";
+            this.MinimumSize = new System.Drawing.Size(225, 250);
+            this.Name = "AddNewDevForm";
             this.Text = "Adding new device";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -261,5 +285,7 @@
         private System.Windows.Forms.Button NoStep5Btn;
         private System.Windows.Forms.Label Step6ToolTip;
         private System.Windows.Forms.Button OkBtn;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox RoomBox;
     }
 }

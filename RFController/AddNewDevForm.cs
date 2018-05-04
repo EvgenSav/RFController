@@ -12,13 +12,14 @@ namespace RFController {
     public partial class AddNewDevForm : Form {
         MyDB<int, RfDevice> DevList;    //device list
         MTRF dev1;                      //MTRF driver
+        List<string> Rooms;
         RfDevice Device;
         Action FormUpdater;
         int FindedChannel;
         int SelectedType;
         bool WaitingBindFlag = false;
 
-        public AddNewDevForm(MyDB<int, RfDevice> devList, MTRF dev) {
+        public AddNewDevForm(MyDB<int, RfDevice> devList, MTRF dev, List<string> rooms) {
             InitializeComponent();
             Size = new Size(0, 185);
 
@@ -26,6 +27,7 @@ namespace RFController {
 
             DevList = devList;
             dev1 = dev;
+            Rooms = rooms;
 
             DevTypeBox.DataSource = new[] {
                 new { Name = "Пульт", Value = NooDevType.RemController },
@@ -36,7 +38,11 @@ namespace RFController {
             DevTypeBox.ValueMember = "Value";
             DevTypeBox.DisplayMember = "Name";
 
+            RoomBox.DataSource = Rooms;
+
             DevTypeBox.Enabled = false;
+            RoomBox.Enabled = false;
+
             Step3ToolTip.Visible = false;
             Step4Tooltip.Visible = false;
             Step5ToolTip.Visible = false;
@@ -126,49 +132,7 @@ namespace RFController {
         }
 
         private void DevTypeBox_SelectionChangeCommitted(object sender, EventArgs e) {
-            SelectedType = (int)DevTypeBox.SelectedValue;
-            dev1.BindOn(0, 1, bindOff: true);                  //send disable bind if enabled
-            Step2ToolTip.BackColor = Color.LightGreen;         //indicate step 2 - done
-            FindedChannel = FindEmptyChannel(SelectedType);    //find empty channel
-            if (FindedChannel != -1) {
-                Device = new RfDevice {
-                    Name = DevNameBox.Text,
-                    Type = SelectedType,
-                    Channel = FindedChannel
-                };
-
-                switch (SelectedType) {
-                    case NooDevType.PowerUnit:
-                        WaitingBindFlag = false;
-                        Step3ToolTip.Text = "Step 3. Press service button. (LED should start blinking)";
-                        Step3ToolTip.Visible = true;
-                        Step4Tooltip.Visible = true;
-                        BindBtn.Visible = true;
-                        Size = new Size(0, 295);
-                        break;
-                    case NooDevType.PowerUnitF:
-                        WaitingBindFlag = false;
-                        Step3ToolTip.Text = "Step 3. Press service button. (LED should start blinking)";
-                        Step3ToolTip.Visible = true;
-                        Step4Tooltip.Visible = true;
-                        BindBtn.Visible = true;
-                        Size = new Size(0, 295);
-                        break;
-                    default: //NooDevType.RemController or NooDevType.Sensor
-                        dev1.BindOn(FindedChannel, 1);  //enable bind at finded chnannel
-                        Step3ToolTip.Text = "Step 3. Press service button";
-                        Step3ToolTip.Visible = true;
-                        Size = new Size(0, 220);
-                        Step4Tooltip.Visible = false;
-                        Status.Text = "Waiting...";
-
-                        WaitingBindFlag = true;
-                        timer1.Interval = 25000;
-                        timer1.Start();
-                        break;
-                }
-            }
-
+            RoomBox.Enabled = true;
         }
 
         private int FindEmptyChannel(int mode) {
@@ -203,7 +167,7 @@ namespace RFController {
                 timer1.Start();
             } else {
                 dev1.BindOn(FindedChannel, 0);
-                Size = new Size(0, 405);
+                Size = new Size(0, 465);
                 Step5ToolTip.Visible = true;
 
                 Status.Text = "Waiting for user confirm...";
@@ -222,7 +186,7 @@ namespace RFController {
 
         private void YesBtnClick(object sender, EventArgs e) {
             BindBtn.Enabled = false;
-            Size = new Size(0, 510);
+            Size = new Size(0, 570);
             Step6ToolTip.Visible = true;
             Step5ToolTip.BackColor = Color.LightGreen;
             NoStep5Btn.Enabled = false;
@@ -238,6 +202,52 @@ namespace RFController {
             DevList.Add(FindedChannel, Device);
             WaitingBindFlag = false;
             UpdateForm();
+        }
+
+        private void RoomBox_SelectionChangeCommitted(object sender, EventArgs e) {
+            SelectedType = (int)DevTypeBox.SelectedValue;
+            dev1.BindOn(0, 1, bindOff: true);                  //send disable bind if enabled
+            Step2ToolTip.BackColor = Color.LightGreen;         //indicate step 2 - done
+            FindedChannel = FindEmptyChannel(SelectedType);    //find empty channel
+            if (FindedChannel != -1) {
+                Device = new RfDevice {
+                    Name = DevNameBox.Text,
+                    Type = SelectedType,
+                    Channel = FindedChannel,
+                    Room = (string) RoomBox.SelectedValue
+                };
+
+                switch (SelectedType) {
+                    case NooDevType.PowerUnit:
+                        WaitingBindFlag = false;
+                        Step3ToolTip.Text = "Step 3. Press service button. (LED should start blinking)";
+                        Step3ToolTip.Visible = true;
+                        Step4Tooltip.Visible = true;
+                        BindBtn.Visible = true;
+                        Size = new Size(0, 355);
+                        break;
+                    case NooDevType.PowerUnitF:
+                        WaitingBindFlag = false;
+                        Step3ToolTip.Text = "Step 3. Press service button. (LED should start blinking)";
+                        Step3ToolTip.Visible = true;
+                        Step4Tooltip.Visible = true;
+                        BindBtn.Visible = true;
+                        Size = new Size(0, 355);
+                        break;
+                    default: //NooDevType.RemController or NooDevType.Sensor
+                        dev1.BindOn(FindedChannel, 1);  //enable bind at finded chnannel
+                        Step3ToolTip.Text = "Step 3. Press service button";
+                        Step3ToolTip.Visible = true;
+                        Size = new Size(0, 280);
+                        Step4Tooltip.Visible = false;
+                        Status.Text = "Waiting...";
+
+                        WaitingBindFlag = true;
+                        timer1.Interval = 25000;
+                        timer1.Start();
+                        break;
+                }
+            }
         }
     }
 }
