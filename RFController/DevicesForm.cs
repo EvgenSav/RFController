@@ -35,6 +35,7 @@ namespace RFController {
         Control CurBright;
         int? LoopedDevKey;
         int SelectedTab = 0;
+        RfDevice WaitingForActionDev;
 
         public DevicesForm() {
             InitializeComponent();
@@ -57,7 +58,7 @@ namespace RFController {
             flowLayoutPanel1.Controls.Remove(groupBox1);
 
             AllDevicesControls = new List<SortedDictionary<int, Control>>();
-            
+
             Rooms = new List<string>();
             ControlsHash = new Dictionary<int, int>();
 
@@ -65,7 +66,7 @@ namespace RFController {
             this.FormClosing += DevicesForm_FormClosing;
 
             FormUpdater = new Action<int>(UpdateForm);
-            
+
             t1 = new System.Timers.Timer { AutoReset = false, Interval = 500 };
             t1.Elapsed += T1_Elapsed;
             t2 = new System.Timers.Timer { AutoReset = true, Interval = 500 };
@@ -83,19 +84,20 @@ namespace RFController {
                 flowLayoutPanel1.Controls.Add(c);
                 AllDevicesControls[0].Add(item.Key, c);
             }
+
             var groupedByRoomDevices = from r in DevBase.Data
-                                 where r.Value[r.Value.Count - 1].Room != null
-                                 select new {
-                                     Name = r.Value[r.Value.Count - 1].Room,
-                                     Dev = r.Value[r.Value.Count - 1],
-                                     Key = r.Key
-                                 } into devs
-                                 where devs.Dev.Room != null
-                                 group devs by devs.Dev.Room;
+                                       where r.Value[r.Value.Count - 1].Room != null
+                                       select new {
+                                           Name = r.Value[r.Value.Count - 1].Room,
+                                           Dev = r.Value[r.Value.Count - 1],
+                                           Key = r.Key
+                                       } into devs
+                                       where devs.Dev.Room != null
+                                       group devs by devs.Dev.Room;
             int tabIdx = 0;
 
             foreach (var room in groupedByRoomDevices) {
-                TabControl.TabPageCollection tabPages = tabControl1.TabPages;
+                TabControl.TabPageCollection tabPages = RoomSelector.TabPages;
                 tabPages.Add(room.Key);
                 Rooms.Add(room.Key);
                 AllDevicesControls.Add(new SortedDictionary<int, Control>());
@@ -106,11 +108,13 @@ namespace RFController {
                     AutoSize = flowLayoutPanel1.AutoSize,
                     AutoSizeMode = flowLayoutPanel1.AutoSizeMode,
                     BackColor = flowLayoutPanel1.BackColor,
+                    MinimumSize = flowLayoutPanel1.MinimumSize,
+                    MaximumSize = flowLayoutPanel1.MaximumSize,
                     Location = flowLayoutPanel1.Location
                 });
                 foreach (var item in room) {
                     Control devControl = GetCopy(AllDevicesControls[0][item.Key], 0);
-                    tabControl1.TabPages[tabIdx].Controls[0].Controls.Add(devControl);
+                    RoomSelector.TabPages[tabIdx].Controls[0].Controls.Add(devControl);
                     AllDevicesControls[tabIdx].Add(item.Key, devControl);
                 }
             }
@@ -156,35 +160,18 @@ namespace RFController {
         }
 
         public void UpdateForm(int currentTabIdx) {
-            //ICollection<int> keys1 = AllDevicesControls[currentTabIdx].Keys;
-            //ICollection<int> keys2 = DevBase.Data.Keys;
-            //IEnumerable<int> subKeys1 = keys1.Except(keys2);
-            //IEnumerable<int> subKeys2 = keys2.Except(keys1);
-            //if (subKeys1.Count() != 0) { //There are more controls than existing devices in the ControlForm
-            //    foreach (var item in subKeys1) {
-            //        Control c = AllDevicesControls[currentTabIdx][item];
-            //        flowLayoutPanel1.Controls.Remove(c); //remove controls for non existing devices
-            //        AllDevicesControls[currentTabIdx].Remove(item);
-            //        break;
-            //    }
-            //}
-            //if (subKeys2.Count() != 0) { //There are more existing devices than controls in the ControlForm
-            //    foreach (var item in subKeys2) {
-            //        Control c = GetCopy(Template, 0);
-            //        flowLayoutPanel1.Controls.Add(c); //add controls
-            //        AllDevicesControls[currentTabIdx].Add(item, c);
-            //    }
-            //}
             //update info of each device
             foreach (var EachDeviceControls in AllDevicesControls[currentTabIdx]) {
                 RfDevice Device = DevBase.Data[EachDeviceControls.Key][0];
                 EachDeviceControls.Value.Text = Device.Name.ToString();
+                //Add context menu items for each device
                 foreach (var item in EachDeviceControls.Value.ContextMenuStrip.Items) {
                     int contMenuStripHash = item.GetHashCode();
                     if (!ControlsHash.ContainsKey(contMenuStripHash)) {
                         ControlsHash.Add(contMenuStripHash, EachDeviceControls.Key);
                     }
                 }
+                //
                 if (!ControlsHash.ContainsKey(EachDeviceControls.Value.GetHashCode())) {
                     ControlsHash.Add(EachDeviceControls.Value.GetHashCode(), EachDeviceControls.Key);
                 }
@@ -192,7 +179,14 @@ namespace RFController {
                 foreach (Control control in cc1) {
                     switch (control.Name) {
                         case "TypeBox":
-                            control.Text = GetDeviceType(DevBase.Data[EachDeviceControls.Key][0]);
+                            control.Text = Device.GetDeviceType();
+                            if (Device.Type == NooDevType.PowerUnit || Device.Type == NooDevType.PowerUnitF) {
+                                int typeBoxHash = control.GetHashCode();
+                                if (!ControlsHash.ContainsKey(typeBoxHash)) {
+                                    ControlsHash.Add(typeBoxHash, EachDeviceControls.Key);
+                                    control.MouseClick += Device_MouseClick;
+                                }
+                            }
                             break;
                         case "StatePictBox": //state indication
                             PictureBox pictureBox = (PictureBox)control;
@@ -264,29 +258,13 @@ namespace RFController {
                                 control.Visible = false;
                             }
                             break;
-                        case "DimmerEn":
-                            if (Device.Type == NooDevType.PowerUnit ||
-                                Device.Type == NooDevType.PowerUnitF) {
-
-                                CheckBox cb = (CheckBox)control;
-                                int DimBtnHash = control.GetHashCode();
-                                if (!ControlsHash.ContainsKey(DimBtnHash)) {
-                                    ControlsHash.Add(DimBtnHash, EachDeviceControls.Key);
-                                    cb.CheckedChanged += Cb_CheckedChanged;
-                                }
-                                cb.Checked = Device.IsDimmable;
-                            } else {
-                                control.Visible = false;
-                            }
-                            break;
                     }
                 }
             }
             Size s1 = flowLayoutPanel1.Size;
             s1.Height = s1.Height + 35;
             s1.Width = s1.Width + 15;
-            tabControl1.Size = s1;
-
+            RoomSelector.Size = s1;
         }
 
         //reset focus from Bright Regulating Label        
@@ -297,57 +275,6 @@ namespace RFController {
         private void Control_MouseEnter(object sender, EventArgs e) {
             Label lb = (Label)sender;
             lb.Focus();
-        }
-
-        string GetDeviceType(RfDevice dev) {
-            string res = "";
-            switch (dev.Type) {
-                case NooDevType.RemController:
-                    res = "Пульт";
-                    break;
-                case NooDevType.Sensor:
-                    switch (dev.DevType) {
-                        case 1:
-                            res = "PT112";
-                            break;
-                        case 2:
-                            res = "PT111";
-                            break;
-                        case 3:
-                            res = "PM111";
-                            break;
-                        case 5:
-                            res = "PM112";
-                            break;
-                    }
-                    break;
-                case NooDevType.PowerUnitF:
-                    switch (dev.DevType) {
-                        case 0:
-                            res = "MTRF-64";
-                            break;
-                        case 1:
-                            res = "SLF-1-300";
-                            break;
-                        case 2:
-                            res = "SRF-10-1000";
-                            break;
-                        case 3:
-                            res = "SRF-1-3000";
-                            break;
-                        case 4:
-                            res = "SRF-1-3000M";
-                            break;
-                        case 5:
-                            res = "SUF-1-300";
-                            break;
-                        case 6:
-                            res = "SRF-1-3000T";
-                            break;
-                    }
-                    break;
-            }
-            return res;
         }
 
         int Round(float val) {
@@ -375,18 +302,6 @@ namespace RFController {
                 t1.Start();
             }
         }
-
-        private void Cb_CheckedChanged(object sender, EventArgs e) {
-            CheckBox cb = (CheckBox)sender;
-            int DevKey = sender.GetHashCode();
-            RfDevice rfDev = DevBase.Data[ControlsHash[DevKey]][0];
-            rfDev.IsDimmable = cb.Checked;
-            DevBase.Data[ControlsHash[DevKey]][0] = rfDev;
-            UpdateForm(0);
-        }
-
-
-
 
         private void Dev1_NewDataReceived(object sender, EventArgs e) {
             ParseIncomingData();
@@ -442,7 +357,11 @@ namespace RFController {
             if (Device.Type == NooDevType.PowerUnitF) { //Noo-F
                 Mtrf64.SendCmd(Device.Channel, Mode.FTx, NooCmd.Switch, Device.Addr);
             } else if (Device.Type == NooDevType.PowerUnit) { //Noo
-                Mtrf64.SendCmd(Device.Channel, Mode.Tx, NooCmd.Switch);
+                if (Device.State != 0) {
+                    Mtrf64.SendCmd(Device.Channel, Mode.Tx, NooCmd.Off);
+                } else {
+                    Mtrf64.SendCmd(Device.Channel, Mode.Tx, NooCmd.On);
+                }
             }
         }
         #region Open DB
@@ -617,13 +536,17 @@ namespace RFController {
             }
         }
 
-        private void AddNewDevice_MenuItem_Click(object sender, EventArgs e) { 
+        private void AddNewDevice_MenuItem_Click(object sender, EventArgs e) {
             addNewDevForm = new AddNewDevForm(DevBase, Mtrf64, Rooms);
             addNewDevForm.Show();
             addNewDevForm.FormClosed += (_sender, args) => {
-                int devKey = FindDifferencies();
-                AddControl(devKey);
-                this.UpdateForm(SelectedTab);
+                if (addNewDevForm.AddingOk) {
+                    WaitingForActionDev = addNewDevForm.Device;
+                    int keyToAdd = addNewDevForm.KeyToAdd;
+                    AddControl(keyToAdd);
+                    DevBase.Add(keyToAdd, WaitingForActionDev);
+                    this.UpdateForm(SelectedTab);
+                }
             };
         }
         private void ServiceToolStrip_MenuItem_Click(object sender, EventArgs e) {
@@ -659,57 +582,54 @@ namespace RFController {
         }
 
         void AddControl(int devKeyToAdd) {
-            string roomToAdd = DevBase.Data[devKeyToAdd][0].Room;
+            string roomToAdd = WaitingForActionDev.Room;
             int roomIdx = Rooms.IndexOf(roomToAdd) + 1;
             Control devControl = GetCopy(Template, 0);
             AllDevicesControls[roomIdx].Add(devKeyToAdd, devControl);
-            tabControl1.TabPages[roomIdx].Controls[0].Controls.Add(devControl);
+            RoomSelector.TabPages[roomIdx].Controls[0].Controls.Add(devControl);
 
             devControl = GetCopy(Template, 0);
             AllDevicesControls[0].Add(devKeyToAdd, devControl);
-            tabControl1.TabPages[0].Controls[0].Controls.Add(devControl);
+            RoomSelector.TabPages[0].Controls[0].Controls.Add(devControl);
         }
+
         void RemoveControl(int devKey) {
-            //foreach (int devKeyToRemove in keysToRemove) {
-            //    Control toDelete = DevsInRoom[devKeyToRemove];
-            //    int curRoomIdx = AllDevicesControls.IndexOf(DevsInRoom);
-            //    tabControl1.TabPages[curRoomIdx].Controls[0].Controls.Remove(toDelete);
-            //    DevsInRoom.Remove(devKeyToRemove);
-            //}
+            Control toRemove;
+            string roomToRemove = DevBase.Data[devKey][0].Room;
+            if (roomToRemove != null) { //delete from room
+                int roomIdx = Rooms.IndexOf(roomToRemove) + 1;
+                toRemove = AllDevicesControls[roomIdx][devKey];
+                AllDevicesControls[roomIdx].Remove(devKey);
+                RoomSelector.TabPages[roomIdx].Controls[0].Controls.Remove(toRemove);
+            }
+            //delete from all
+            toRemove = AllDevicesControls[0][devKey];
+            AllDevicesControls[0].Remove(devKey);
+            RoomSelector.TabPages[0].Controls[0].Controls.Remove(toRemove);
+
         }
 
         int FindDifferencies() {
             foreach (var DevsInRoom in AllDevicesControls) {
-                IEnumerable<int> keysToAdd    = DevBase.Data.Keys.Except(DevsInRoom.Keys);
+                IEnumerable<int> keysToAdd = DevBase.Data.Keys.Except(DevsInRoom.Keys);
                 if (keysToAdd.Count() != 0) {
                     return keysToAdd.First();
                 }
 
                 IEnumerable<int> keysToRemove = DevsInRoom.Keys.Except(DevBase.Data.Keys);
                 if (keysToRemove.Count() != 0) {
-                    return keysToAdd.First();
-                }                
+                    return keysToRemove.First();
+                }
             }
             return 0;
         }
 
         private void Remove_Click(object sender, EventArgs e) {
-            int Devkey = ControlsHash[sender.GetHashCode()];
-
-            //foreach (TabPage PanelAtPage in tabControl1.TabPages) {
-            //    if (AllDevicesControls[tabControl1.TabPages.IndexOf(PanelAtPage)].ContainsKey(Devkey)) {    //if this tab contains element, that we want to delete
-            //        Control toDelete = AllDevicesControls[tabControl1.TabPages.IndexOf(PanelAtPage)][Devkey];
-            //        PanelAtPage.Controls[0].Controls.Remove(toDelete);
-            //    }
-            //}
-            //foreach (var ControlsAtPage in AllDevicesControls) {
-            //    ControlsAtPage.Remove(Devkey);
-            //}
-            DevBase.Data.Remove(Devkey);
-            int devKey = FindDifferencies();
+            int devKey = ControlsHash[sender.GetHashCode()];
             RemoveControl(devKey);
-            UpdateForm(SelectedTab);            
-            }
+            DevBase.Data.Remove(devKey);
+            UpdateForm(SelectedTab);
+        }
 
         private void SwitchLoop_Click(object sender, EventArgs e) {
             ToolStripMenuItem tmi = (ToolStripMenuItem)sender;
@@ -732,7 +652,7 @@ namespace RFController {
 
         }
 
-        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e) {
+        private void RoomSelector_SelectedIndexChanged(object sender, EventArgs e) {
             SelectedTab = ((TabControl)sender).SelectedIndex;
             UpdateForm(SelectedTab);
         }

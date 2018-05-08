@@ -42,14 +42,14 @@
             this.Temperature_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewDeviceMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.RoomSelector = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.StatePictBox)).BeginInit();
             this.menuStrip1.SuspendLayout();
-            this.tabControl1.SuspendLayout();
+            this.RoomSelector.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -211,17 +211,17 @@
             this.addNewDeviceMenuItem.Text = "Add new device";
             this.addNewDeviceMenuItem.Click += new System.EventHandler(this.AddNewDevice_MenuItem_Click);
             // 
-            // tabControl1
+            // RoomSelector
             // 
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Location = new System.Drawing.Point(6, 27);
-            this.tabControl1.Multiline = true;
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.Padding = new System.Drawing.Point(3, 3);
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(260, 314);
-            this.tabControl1.TabIndex = 15;
-            this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
+            this.RoomSelector.Controls.Add(this.tabPage1);
+            this.RoomSelector.Location = new System.Drawing.Point(6, 27);
+            this.RoomSelector.Multiline = true;
+            this.RoomSelector.Name = "RoomSelector";
+            this.RoomSelector.Padding = new System.Drawing.Point(3, 3);
+            this.RoomSelector.SelectedIndex = 0;
+            this.RoomSelector.Size = new System.Drawing.Size(260, 314);
+            this.RoomSelector.TabIndex = 15;
+            this.RoomSelector.SelectedIndexChanged += new System.EventHandler(this.RoomSelector_SelectedIndexChanged);
             // 
             // tabPage1
             // 
@@ -240,7 +240,7 @@
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(954, 555);
-            this.Controls.Add(this.tabControl1);
+            this.Controls.Add(this.RoomSelector);
             this.Controls.Add(this.menuStrip1);
             this.Name = "DevicesForm";
             this.Text = "RFController - Devices";
@@ -252,7 +252,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.StatePictBox)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            this.tabControl1.ResumeLayout(false);
+            this.RoomSelector.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
             this.ResumeLayout(false);
@@ -280,7 +280,7 @@
         private System.Windows.Forms.PictureBox StatePictBox;
         private System.Windows.Forms.Label StateBox;
         private System.Windows.Forms.Label TypeBox;
-        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabControl RoomSelector;
         private System.Windows.Forms.TabPage tabPage1;
     }
 }

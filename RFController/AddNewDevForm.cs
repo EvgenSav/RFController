@@ -13,11 +13,15 @@ namespace RFController {
         MyDB<int, RfDevice> DevList;    //device list
         MTRF dev1;                      //MTRF driver
         List<string> Rooms;
-        RfDevice Device;
+        
         Action FormUpdater;
         int FindedChannel;
         int SelectedType;
         bool WaitingBindFlag = false;
+
+        public RfDevice Device { get; private set; }
+        public int KeyToAdd { get; private set; }
+        public bool AddingOk { get; private set; }
 
         public AddNewDevForm(MyDB<int, RfDevice> devList, MTRF dev, List<string> rooms) {
             InitializeComponent();
@@ -69,7 +73,8 @@ namespace RFController {
                         if (dev1.rxBuf.Mode == 2 && dev1.rxBuf.Ctr == 3) {
                             WaitingBindFlag = false;
                             Device.Addr = dev1.rxBuf.AddrF;
-                            DevList.Add(dev1.rxBuf.AddrF, Device);
+                            KeyToAdd = Device.Addr;
+                            //DevList.Add(dev1.rxBuf.AddrF, Device);
                             this.BeginInvoke(FormUpdater);
                         }
                         break;
@@ -78,7 +83,8 @@ namespace RFController {
                             FindedChannel == dev1.rxBuf.Ch && dev1.rxBuf.Mode == 1) {
                             WaitingBindFlag = false;
                             Device.DevType = dev1.rxBuf.D0;
-                            DevList.Add(FindedChannel, Device);
+                            KeyToAdd = FindedChannel;
+                            //DevList.Add(FindedChannel, Device);
                             this.BeginInvoke(FormUpdater);
                         }
                         break;
@@ -86,7 +92,8 @@ namespace RFController {
                         if (dev1.rxBuf.Cmd == NooCmd.Bind && FindedChannel == dev1.rxBuf.Ch
                             && dev1.rxBuf.Mode == 1) {
                             WaitingBindFlag = false;
-                            DevList.Add(FindedChannel, Device);
+                            //DevList.Add(FindedChannel, Device);
+                            KeyToAdd = FindedChannel;
                             this.BeginInvoke(FormUpdater);
                         }
                         break;
@@ -111,6 +118,7 @@ namespace RFController {
         public void UpdateForm() {
             Status.BackColor = Color.LightGreen;
             Status.Text = "Device added";
+            AddingOk = true;
             timer1.Interval = 1500;
             timer1.Start();
         }
@@ -199,7 +207,8 @@ namespace RFController {
 
         private void OkBtn_Click(object sender, EventArgs e) {
             Step6ToolTip.BackColor = Color.LightGreen;
-            DevList.Add(FindedChannel, Device);
+            KeyToAdd = FindedChannel;
+            //DevList.Add(FindedChannel, Device);
             WaitingBindFlag = false;
             UpdateForm();
         }

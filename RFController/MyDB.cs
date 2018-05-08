@@ -16,20 +16,6 @@ namespace RFController {
             Data = new SortedDictionary<TKey, List<TValue>>();
         }
 
-        //public List<TValue> this[TKey key] {
-        //    get {
-        //        if (Data.ContainsKey(key)) {
-        //            return Data[key];
-        //        } else {
-        //            return new List<TValue>();
-        //        }
-        //    } 
-        //}
-
-        //public bool ContainsKey(TKey key) {
-        //    return Data.ContainsKey(key);
-        //}
-
         public void Add(TKey channel, TValue data) {
             if (Data.ContainsKey(channel)) {
                 Data[channel].Add(data);
@@ -81,5 +67,59 @@ namespace RFController {
         public int DimCorrLvlLow { get; set; }
         public int OnLvl { get; set; }
         public string Room { get; set; }
+
+        public string GetDeviceType() {
+            string res = "";
+            switch (Type) {
+                case NooDevType.RemController:
+                    res = "Пульт";
+                    break;
+                case NooDevType.Sensor:
+                    switch (DevType) {
+                        case 1:
+                            res = "PT112";
+                            break;
+                        case 2:
+                            res = "PT111";
+                            break;
+                        case 3:
+                            res = "PM111";
+                            break;
+                        case 5:
+                            res = "PM112";
+                            break;
+                    }
+                    break;
+                case NooDevType.PowerUnit:
+                    res = "Сил. блок";
+                    break;
+                case NooDevType.PowerUnitF:
+                    switch (DevType) {
+                        case 0:
+                            res = "MTRF-64";
+                            break;
+                        case 1:
+                            res = "SLF-1-300";
+                            break;
+                        case 2:
+                            res = "SRF-10-1000";
+                            break;
+                        case 3:
+                            res = "SRF-1-3000";
+                            break;
+                        case 4:
+                            res = "SRF-1-3000M";
+                            break;
+                        case 5:
+                            res = "SUF-1-300";
+                            break;
+                        case 6:
+                            res = "SRF-1-3000T";
+                            break;
+                    }
+                    break;
+            }
+            return res;
+        }
     }
 }
