@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 
 namespace RFController {
     public partial class DevicesForm : Form {
+        RoomsManagerForm roomsManagerForm;
         ServiceForm serviceForm;
         TempForm tempForm;
         LogForm logForm;
@@ -22,7 +23,7 @@ namespace RFController {
 
         Action<int> FormUpdater;
         MyDB<int, RfDevice> DevBase;
-        MyDB<int, TempAtChannel> TemperatureLog;
+        MyDB<int, List<TempAtChannel>> TemperatureLog;
 
         Dictionary<int, int> ControlsHash;
         MTRF Mtrf64;
@@ -41,6 +42,15 @@ namespace RFController {
             InitializeComponent();
             DevBase = GetDeviceBase();
             TemperatureLog = GetTempBase();
+
+            try {
+                using (StreamReader s1 = new StreamReader(new FileStream("rooms.json", FileMode.Open))) {
+                    Rooms = JsonConvert.DeserializeObject<List<string>>(s1.ReadToEnd());
+                }
+            } catch {
+                Rooms = new List<string>(new string[] { "All" });
+            }
+
             Mtrf64 = new MTRF();
             List<Mtrf> connected = Mtrf64.GetAvailableComPorts();
             if (connected.Count != 0) {
@@ -59,7 +69,7 @@ namespace RFController {
 
             AllDevicesControls = new List<SortedDictionary<int, Control>>();
 
-            Rooms = new List<string>();
+
             ControlsHash = new Dictionary<int, int>();
 
             Mtrf64.NewDataReceived += Dev1_NewDataReceived;
@@ -69,7 +79,7 @@ namespace RFController {
 
             t1 = new System.Timers.Timer { AutoReset = false, Interval = 500 };
             t1.Elapsed += T1_Elapsed;
-            t2 = new System.Timers.Timer { AutoReset = true, Interval = 500 };
+            t2 = new System.Timers.Timer { AutoReset = true, Interval = 250 };
             t2.Elapsed += T2_Elapsed;
             InitRooms();
             UpdateForm(0);
@@ -79,29 +89,13 @@ namespace RFController {
         void InitRooms() {
             //init room All(tab idx = 0)
             AllDevicesControls.Add(new SortedDictionary<int, Control>());
-            foreach (var item in DevBase.Data) {
-                Control c = GetCopy(Template, 0);
-                flowLayoutPanel1.Controls.Add(c);
-                AllDevicesControls[0].Add(item.Key, c);
-            }
-
-            var groupedByRoomDevices = from r in DevBase.Data
-                                       where r.Value[r.Value.Count - 1].Room != null
-                                       select new {
-                                           Name = r.Value[r.Value.Count - 1].Room,
-                                           Dev = r.Value[r.Value.Count - 1],
-                                           Key = r.Key
-                                       } into devs
-                                       where devs.Dev.Room != null
-                                       group devs by devs.Dev.Room;
-            int tabIdx = 0;
-
-            foreach (var room in groupedByRoomDevices) {
-                TabControl.TabPageCollection tabPages = RoomSelector.TabPages;
-                tabPages.Add(room.Key);
-                Rooms.Add(room.Key);
-                AllDevicesControls.Add(new SortedDictionary<int, Control>());
-                tabIdx++;
+            TabControl.TabPageCollection tabPages = RoomSelector.TabPages;
+            for (int tabIdx = 0; tabIdx < Rooms.Count; tabIdx++) {
+                string curRoom = Rooms[tabIdx];
+                if (tabPages.Count <= tabIdx) {
+                    tabPages.Add(curRoom);
+                    AllDevicesControls.Add(new SortedDictionary<int, Control>());
+                }
                 tabPages[tabIdx].BackColor = Color.White;
 
                 tabPages[tabIdx].Controls.Add(new FlowLayoutPanel {
@@ -112,17 +106,25 @@ namespace RFController {
                     MaximumSize = flowLayoutPanel1.MaximumSize,
                     Location = flowLayoutPanel1.Location
                 });
-                foreach (var item in room) {
-                    Control devControl = GetCopy(AllDevicesControls[0][item.Key], 0);
-                    RoomSelector.TabPages[tabIdx].Controls[0].Controls.Add(devControl);
-                    AllDevicesControls[tabIdx].Add(item.Key, devControl);
+                if (curRoom != "All") {
+                    var devsInRoom = from Device in DevBase.Data
+                                     where Device.Value.Room == curRoom
+                                     select Device;
+
+                    foreach (var item in devsInRoom) {
+                        AddControl(item.Key, curRoom);
+                    }
+                } else {
+                    foreach (var item in DevBase.Data) {
+                        AddControl(item.Key, curRoom);
+                    }
                 }
             }
         }
         //timer event handler for switch looping
         private void T2_Elapsed(object sender, System.Timers.ElapsedEventArgs e) {
             if (LoopedDevKey != null) {
-                RfDevice rfd = DevBase.Data[(int)LoopedDevKey][0];
+                RfDevice rfd = DevBase.Data[(int)LoopedDevKey];
                 if (rfd.DevType > 0) {
                     Mtrf64.SendCmd(0, 2, NooCmd.Switch, rfd.Addr);
                 } else {
@@ -134,7 +136,7 @@ namespace RFController {
         //timer event handler for regulating brightness
         private void T1_Elapsed(object sender, System.Timers.ElapsedEventArgs e) {
             int DevKey = ControlsHash[CurBright.GetHashCode()];
-            RfDevice Device = DevBase.Data[DevKey][0];
+            RfDevice Device = DevBase.Data[DevKey];
             int DevBright = 0;
             string bright = CurBright.Text.TrimEnd(' ', '%');
             Int32.TryParse(bright, out int result);
@@ -155,14 +157,19 @@ namespace RFController {
             if (tempForm != null) tempForm.Close();
             if (serviceForm != null) serviceForm.Close();
             if (tempGraphForm != null) tempGraphForm.Close();
+            if (roomsManagerForm != null) roomsManagerForm.Close();
             TemperatureLog.SaveToFile(String.Format("{0} templog.json", DateTime.Now.ToShortDateString()));
             DevBase.SaveToFile("BindedDeviceList.json");
+
+            using (StreamWriter s1 = new StreamWriter(new FileStream("rooms.json", FileMode.Create, FileAccess.ReadWrite))) {
+                s1.Write(JsonConvert.SerializeObject(Rooms, Formatting.Indented));
+            }
         }
 
         public void UpdateForm(int currentTabIdx) {
             //update info of each device
             foreach (var EachDeviceControls in AllDevicesControls[currentTabIdx]) {
-                RfDevice Device = DevBase.Data[EachDeviceControls.Key][0];
+                RfDevice Device = DevBase.Data[EachDeviceControls.Key];
                 EachDeviceControls.Value.Text = Device.Name.ToString();
                 //Add context menu items for each device
                 foreach (var item in EachDeviceControls.Value.ContextMenuStrip.Items) {
@@ -298,7 +305,6 @@ namespace RFController {
             if ((result > 0 || e.Delta > 0) && (e.Delta < 0 || result < 100)) {
                 CurBright.Text = (result + (e.Delta / 120)).ToString() + " %";
                 t1.Stop();
-                //CurBright = c;
                 t1.Start();
             }
         }
@@ -353,7 +359,7 @@ namespace RFController {
 
         private void Device_MouseClick(object sender, MouseEventArgs e) {
             int DevKey = ControlsHash[sender.GetHashCode()];
-            RfDevice Device = DevBase.Data[DevKey][0];
+            RfDevice Device = DevBase.Data[DevKey];
             if (Device.Type == NooDevType.PowerUnitF) { //Noo-F
                 Mtrf64.SendCmd(Device.Channel, Mode.FTx, NooCmd.Switch, Device.Addr);
             } else if (Device.Type == NooDevType.PowerUnit) { //Noo
@@ -365,18 +371,18 @@ namespace RFController {
             }
         }
         #region Open DB
-        private MyDB<int, TempAtChannel> GetTempBase() {
-            MyDB<int, TempAtChannel> tempLog;
+        private MyDB<int, List<TempAtChannel>> GetTempBase() {
+            MyDB<int, List<TempAtChannel>> tempLog;
             try {
                 using (StreamReader s1 = new StreamReader(new FileStream(String.Format("{0} templog.json", DateTime.Now.ToShortDateString()), FileMode.Open))) {
                     string strlog = s1.ReadToEnd();
                     JsonSerializerSettings set1 = new JsonSerializerSettings {
                         Formatting = Formatting.Indented
                     };
-                    tempLog = JsonConvert.DeserializeObject<MyDB<int, TempAtChannel>>(strlog, set1);
+                    tempLog = JsonConvert.DeserializeObject<MyDB<int, List<TempAtChannel>>>(strlog, set1);
                 }
             } catch {
-                tempLog = new MyDB<int, TempAtChannel>();
+                tempLog = new MyDB<int, List<TempAtChannel>>();
             }
             return tempLog;
         }
@@ -404,12 +410,12 @@ namespace RFController {
             bool ContainsDevice = false;
             if (Mtrf64.rxBuf.AddrF != 0) {
                 if (DevBase.Data.ContainsKey(Mtrf64.rxBuf.AddrF)) {
-                    Device = DevBase.Data[Mtrf64.rxBuf.AddrF][0];
+                    Device = DevBase.Data[Mtrf64.rxBuf.AddrF];
                     ContainsDevice = true;
                 }
             } else {
                 if (DevBase.Data.ContainsKey(Mtrf64.rxBuf.Ch)) {
-                    Device = DevBase.Data[Mtrf64.rxBuf.Ch][0];
+                    Device = DevBase.Data[Mtrf64.rxBuf.Ch];
                     ContainsDevice = true;
                 }
             }
@@ -437,19 +443,28 @@ namespace RFController {
                         break;
                     case NooCmd.SensTempHumi:
                         Mtrf64.StoreTemperature(ref Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]);
-                        TemperatureLog.Add(Mtrf64.rxBuf.Ch,
-                        new TempAtChannel(DateTime.Now, Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]));
+                        if (TemperatureLog.Data.ContainsKey(Mtrf64.rxBuf.Ch)) {
+                            TemperatureLog.Data[Mtrf64.rxBuf.Ch].Add(new TempAtChannel(DateTime.Now, Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]));
+                        } else {
+                            TemperatureLog.Data.Add(Mtrf64.rxBuf.Ch, new List<TempAtChannel>());
+                            TemperatureLog.Data[Mtrf64.rxBuf.Ch].Add(new TempAtChannel(DateTime.Now, Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]));
+                        }
+                        //TemperatureLog.Add(Mtrf64.rxBuf.Ch,
+                        //new TempAtChannel(DateTime.Now, Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]));
                         break;
                     case NooCmd.TemporaryOn:
                         int DevKey = Mtrf64.rxBuf.Ch;
+                        if (!TemperatureLog.Data.ContainsKey(DevKey)) {
+                            TemperatureLog.Data.Add(DevKey, new List<TempAtChannel>());
+                        }
                         int count = TemperatureLog.Data[DevKey].Count;
                         if (count > 0) {
                             DateTime previous = TemperatureLog.Data[DevKey][count - 1].CurrentTime;
                             if (DateTime.Now.Subtract(previous).Seconds > 4) {
-                                TemperatureLog.Add(Mtrf64.rxBuf.Ch, new TempAtChannel(DateTime.Now, Mtrf64.rxBuf.D0));
+                                TemperatureLog.Data[DevKey].Add(new TempAtChannel(DateTime.Now, Mtrf64.rxBuf.D0));
                             }
                         } else {
-                            TemperatureLog.Add(Mtrf64.rxBuf.Ch, new TempAtChannel(DateTime.Now, Mtrf64.rxBuf.D0));
+                            TemperatureLog.Data[DevKey].Add(new TempAtChannel(DateTime.Now, Mtrf64.rxBuf.D0));
                         }
                         break;
 
@@ -484,25 +499,25 @@ namespace RFController {
         #region Effects
         private void SeriesOnBtn_Click(object sender, EventArgs e) {
             foreach (var item in DevBase.Data) {
-                RfDevice rfd = item.Value[0];
+                RfDevice rfd = item.Value;
                 Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.On);
             }
         }
 
         private void SeriesOffBtn_Click(object sender, EventArgs e) {
             foreach (var item in DevBase.Data) {
-                RfDevice rfd = item.Value[0];
+                RfDevice rfd = item.Value;
                 Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.Off);
             }
         }
         private void FaderBtn_Click(object sender, EventArgs e) {
             for (int i = 0; i < 10; i++) {
                 foreach (var item in DevBase.Data) {
-                    RfDevice rfd = item.Value[0];
+                    RfDevice rfd = item.Value;
                     Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.On);
                 }
                 foreach (var item in DevBase.Data.Reverse()) {
-                    RfDevice rfd = item.Value[0];
+                    RfDevice rfd = item.Value;
                     Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.Off);
                 }
             }
@@ -543,8 +558,8 @@ namespace RFController {
                 if (addNewDevForm.AddingOk) {
                     WaitingForActionDev = addNewDevForm.Device;
                     int keyToAdd = addNewDevForm.KeyToAdd;
-                    AddControl(keyToAdd);
-                    DevBase.Add(keyToAdd, WaitingForActionDev);
+                    AddControl(keyToAdd, WaitingForActionDev.Room);
+                    DevBase.Data.Add(keyToAdd, WaitingForActionDev);
                     this.UpdateForm(SelectedTab);
                 }
             };
@@ -575,29 +590,29 @@ namespace RFController {
         }
         private void ShowInfo_Click(object sender, EventArgs e) {
             int hash = sender.GetHashCode();
-            RfDevice rf = DevBase.Data[ControlsHash[hash]][0];
+            RfDevice rf = DevBase.Data[ControlsHash[hash]];
             string res = String.Format("Device type: {0} \n" +
                 "Firmware version: {1}", rf.DevType, rf.FirmwareVer);
             MessageBox.Show(res);
         }
 
-        void AddControl(int devKeyToAdd) {
-            string roomToAdd = WaitingForActionDev.Room;
-            int roomIdx = Rooms.IndexOf(roomToAdd) + 1;
+        void AddControl(int devKeyToAdd, string roomToAdd) {
+            int roomIdx = Rooms.IndexOf(roomToAdd);
             Control devControl = GetCopy(Template, 0);
             AllDevicesControls[roomIdx].Add(devKeyToAdd, devControl);
             RoomSelector.TabPages[roomIdx].Controls[0].Controls.Add(devControl);
-
-            devControl = GetCopy(Template, 0);
-            AllDevicesControls[0].Add(devKeyToAdd, devControl);
-            RoomSelector.TabPages[0].Controls[0].Controls.Add(devControl);
+            //if (!AllDevicesControls[0].ContainsKey(devKeyToAdd)) {
+            //    devControl = GetCopy(Template, 0);
+            //    AllDevicesControls[0].Add(devKeyToAdd, devControl);
+            //    RoomSelector.TabPages[0].Controls[0].Controls.Add(devControl);
+            //}
         }
 
         void RemoveControl(int devKey) {
             Control toRemove;
-            string roomToRemove = DevBase.Data[devKey][0].Room;
+            string roomToRemove = DevBase.Data[devKey].Room;
             if (roomToRemove != null) { //delete from room
-                int roomIdx = Rooms.IndexOf(roomToRemove) + 1;
+                int roomIdx = Rooms.IndexOf(roomToRemove);
                 toRemove = AllDevicesControls[roomIdx][devKey];
                 AllDevicesControls[roomIdx].Remove(devKey);
                 RoomSelector.TabPages[roomIdx].Controls[0].Controls.Remove(toRemove);
@@ -655,6 +670,34 @@ namespace RFController {
         private void RoomSelector_SelectedIndexChanged(object sender, EventArgs e) {
             SelectedTab = ((TabControl)sender).SelectedIndex;
             UpdateForm(SelectedTab);
+        }
+
+        private void roomsManagerToolStripMenuItem_Click(object sender, EventArgs e) {
+            roomsManagerForm = new RoomsManagerForm(Rooms);
+            roomsManagerForm.Show();
+            roomsManagerForm.FormClosed += RoomsManagerForm_FormClosed;
+        }
+
+        private void RoomsManagerForm_FormClosed(object sender, FormClosedEventArgs e) {
+            if (RoomSelector.TabCount != Rooms.Count) {
+                if (RoomSelector.TabCount > Rooms.Count) { //delete room tab
+                    foreach (TabPage tabpage in RoomSelector.TabPages) {
+                        if (!Rooms.Contains(tabpage.Text)) {
+                            RoomSelector.TabPages.Remove(tabpage);
+                            //break;
+                        }
+                    }
+                } else { //add room tab
+                    List<string> roomsTab = new List<string>();
+                    foreach (TabPage tabPage in RoomSelector.TabPages) {
+                        roomsTab.Add(tabPage.Text);
+                    }
+                    foreach (var item in Rooms.Except(roomsTab)) {
+                        RoomSelector.TabPages.Add(item);
+                        AllDevicesControls.Add(new SortedDictionary<int, Control>());
+                    }
+                }
+            }
         }
     }
 }

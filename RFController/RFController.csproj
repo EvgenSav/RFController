@@ -89,6 +89,12 @@
       <DependentUpon>DevicesForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MyDB.cs" />
+    <Compile Include="RoomsManagerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RoomsManagerForm.Designer.cs">
+      <DependentUpon>RoomsManagerForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ServiceForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -130,6 +136,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DevicesForm.resx">
       <DependentUpon>DevicesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RoomsManagerForm.resx">
+      <DependentUpon>RoomsManagerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ServiceForm.resx">
       <DependentUpon>ServiceForm.cs</DependentUpon>

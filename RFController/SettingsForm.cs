@@ -19,7 +19,7 @@ namespace RFController {
             InitializeComponent();
             Mtrf64 = dev;
             DeviceList = data;
-            RfDevice = DeviceList.Data[key][0];
+            RfDevice = DeviceList.Data[key];
             DevKey = key;
             groupBox1.Text = RfDevice.Name;
 
@@ -34,7 +34,7 @@ namespace RFController {
         }
 
         void UpdateForm() {
-            RfDevice = DeviceList.Data[DevKey][0];
+            RfDevice = DeviceList.Data[DevKey];
             switch(Mtrf64.rxBuf.Fmt) {
                 case 16:
                     SaveState.Checked = ((RfDevice.Settings & 0x01) != 0);

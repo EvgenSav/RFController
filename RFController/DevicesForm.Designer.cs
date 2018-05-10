@@ -42,6 +42,7 @@
             this.Temperature_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewDeviceMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.roomsManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RoomSelector = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.flowLayoutPanel1.SuspendLayout();
@@ -165,7 +166,8 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.showLogToolStripMenuItem});
+            this.showLogToolStripMenuItem,
+            this.roomsManagerToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(954, 24);
@@ -210,6 +212,13 @@
             this.addNewDeviceMenuItem.Size = new System.Drawing.Size(158, 22);
             this.addNewDeviceMenuItem.Text = "Add new device";
             this.addNewDeviceMenuItem.Click += new System.EventHandler(this.AddNewDevice_MenuItem_Click);
+            // 
+            // roomsManagerToolStripMenuItem
+            // 
+            this.roomsManagerToolStripMenuItem.Name = "roomsManagerToolStripMenuItem";
+            this.roomsManagerToolStripMenuItem.Size = new System.Drawing.Size(106, 20);
+            this.roomsManagerToolStripMenuItem.Text = "Rooms manager";
+            this.roomsManagerToolStripMenuItem.Click += new System.EventHandler(this.roomsManagerToolStripMenuItem_Click);
             // 
             // RoomSelector
             // 
@@ -282,5 +291,6 @@
         private System.Windows.Forms.Label TypeBox;
         private System.Windows.Forms.TabControl RoomSelector;
         private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.ToolStripMenuItem roomsManagerToolStripMenuItem;
     }
 }

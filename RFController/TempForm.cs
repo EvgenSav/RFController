@@ -12,12 +12,12 @@ using System.Windows.Forms;
 namespace RFController {
     public partial class TempForm : Form {
         MTRF dev1;
-        MyDB<int, TempAtChannel> TemperatureLog;
+        MyDB<int, List<TempAtChannel>> TemperatureLog;
         Action<TextBox, string> ControlUpdater;
         Control.ControlCollection c1;
         GraphForm trend1;
         Dictionary<int, TextBox> controls = new Dictionary<int, TextBox>();
-        public TempForm(MTRF dev, MyDB<int, TempAtChannel> tempLog) {
+        public TempForm(MTRF dev, MyDB<int, List<TempAtChannel>> tempLog) {
             InitializeComponent();
             dev1 = dev;
             TemperatureLog = tempLog;

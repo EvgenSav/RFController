@@ -147,7 +147,7 @@ namespace RFController {
             int FAddrCount = 0;
             //Noo-F mode
             if (mode == NooDevType.PowerUnitF) {
-                var res = DevList.Data.Where((x) => { return (x.Value[0].Type == NooDevType.PowerUnitF); });
+                var res = DevList.Data.Where((x) => { return (x.Value.Type == NooDevType.PowerUnitF); });
                 foreach (var item in res) {
                     FAddrCount++;
                     //MessageBox.Show(item.Key.ToString());

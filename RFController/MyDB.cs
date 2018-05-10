@@ -10,23 +10,12 @@ using System.IO;
 namespace RFController {
     [Serializable]
     public class MyDB<TKey, TValue> where TKey : struct /*where TValue : class*/ {
-        public SortedDictionary<TKey, List<TValue>> Data;
+        //public SortedDictionary<TKey, List<TValue>> Data;
+        public SortedDictionary<TKey, TValue> Data;
 
         public MyDB() {
-            Data = new SortedDictionary<TKey, List<TValue>>();
-        }
-
-        public void Add(TKey channel, TValue data) {
-            if (Data.ContainsKey(channel)) {
-                Data[channel].Add(data);
-            } else {
-                if (typeof(TValue) == typeof(TempAtChannel)) {
-                    Data.Add(channel, new List<TValue>(44640));
-                } else {
-                    Data.Add(channel, new List<TValue>(64));
-                }                
-                Data[channel].Add(data);
-            }
+            //Data = new SortedDictionary<TKey, List<TValue>>();
+            Data = new SortedDictionary<TKey, TValue>();
         }
 
         public int SaveToFile(string path) {
