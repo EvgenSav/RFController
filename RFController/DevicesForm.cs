@@ -439,7 +439,7 @@ namespace RFController {
                         }
                         break;
                     case NooCmd.Unbind:
-                        Mtrf64.Unbind(Mtrf64.rxBuf.Ch, Mtrf64.rxBuf.Mode);
+                        //Mtrf64.Unbind(Mtrf64.rxBuf.Ch, Mtrf64.rxBuf.Mode);
                         break;
                     case NooCmd.SensTempHumi:
                         Mtrf64.StoreTemperature(ref Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]);
