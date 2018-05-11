@@ -21,6 +21,7 @@ namespace RFController {
 
         private void AddRoomBtn_Click(object sender, EventArgs e) {
             Rooms.Add(textBox1.Text);
+            textBox1.Text = "";
             UpdateForm();
         }
 

@@ -336,7 +336,7 @@ namespace RFController {
                 copy.ContextMenuStrip.Items.Add(item.Text);
             }
 
-            copy.ContextMenuStrip.Items[0].Click += Remove_Click;
+            copy.ContextMenuStrip.Items[0].Click += RemoveDevice_Click;
             copy.ContextMenuStrip.Items[1].Click += ShowInfo_Click;
             copy.ContextMenuStrip.Items[2].Click += Settings_Click;
             copy.ContextMenuStrip.Items[3].Click += SwitchLoop_Click;
@@ -596,53 +596,40 @@ namespace RFController {
             MessageBox.Show(res);
         }
 
-        void AddControl(int devKeyToAdd, string roomToAdd) {
-            int roomIdx = Rooms.IndexOf(roomToAdd);
-            Control devControl = GetCopy(Template, 0);
-            AllDevicesControls[roomIdx].Add(devKeyToAdd, devControl);
-            RoomSelector.TabPages[roomIdx].Controls[0].Controls.Add(devControl);
-            //if (!AllDevicesControls[0].ContainsKey(devKeyToAdd)) {
-            //    devControl = GetCopy(Template, 0);
-            //    AllDevicesControls[0].Add(devKeyToAdd, devControl);
-            //    RoomSelector.TabPages[0].Controls[0].Controls.Add(devControl);
-            //}
-        }
-
-        void RemoveControl(int devKey) {
-            Control toRemove;
-            string roomToRemove = DevBase.Data[devKey].Room;
-            if (roomToRemove != null) { //delete from room
-                int roomIdx = Rooms.IndexOf(roomToRemove);
-                toRemove = AllDevicesControls[roomIdx][devKey];
-                AllDevicesControls[roomIdx].Remove(devKey);
-                RoomSelector.TabPages[roomIdx].Controls[0].Controls.Remove(toRemove);
-            }
-            //delete from all
-            toRemove = AllDevicesControls[0][devKey];
-            AllDevicesControls[0].Remove(devKey);
-            RoomSelector.TabPages[0].Controls[0].Controls.Remove(toRemove);
-
-        }
-
-        int FindDifferencies() {
-            foreach (var DevsInRoom in AllDevicesControls) {
-                IEnumerable<int> keysToAdd = DevBase.Data.Keys.Except(DevsInRoom.Keys);
-                if (keysToAdd.Count() != 0) {
-                    return keysToAdd.First();
-                }
-
-                IEnumerable<int> keysToRemove = DevsInRoom.Keys.Except(DevBase.Data.Keys);
-                if (keysToRemove.Count() != 0) {
-                    return keysToRemove.First();
-                }
-            }
-            return 0;
-        }
-
-        private void Remove_Click(object sender, EventArgs e) {
+        private void RemoveDevice_Click(object sender, EventArgs e) {
+            
             int devKey = ControlsHash[sender.GetHashCode()];
-            RemoveControl(devKey);
+            //find rooms that contains device
+            var roomsToRemove = from room in AllDevicesControls
+                    where room.ContainsKey(devKey)
+                    select  Rooms[AllDevicesControls.IndexOf(room)];
+            //delete controls of device in each room
+            foreach (string roomToRemove in roomsToRemove) {
+                RemoveControl(devKey, roomToRemove);
+            }
+            RfDevice devToRemove = DevBase.Data[devKey];
+            switch (devToRemove.Type) {
+                case NooDevType.PowerUnit:
+                    Mtrf64.Unbind(devToRemove.Channel, Mode.Tx);
+                    MessageBox.Show("Lol");
+                    break;
+                case NooDevType.PowerUnitF:
+                    Mtrf64.Unbind(0, Mode.FTx, devToRemove.Addr);
+                    //MessageBox.Show("Lol");
+                    break;
+                case NooDevType.RemController:
+                    Mtrf64.Unbind(devToRemove.Channel, Mode.Rx);
+                    MessageBox.Show("Lol");
+                    break;
+                case NooDevType.Sensor:
+                    Mtrf64.Unbind(devToRemove.Channel, Mode.Rx);
+                    MessageBox.Show("Lol");
+                    break;
+            }
+            
+            //Remove device from base
             DevBase.Data.Remove(devKey);
+            
             UpdateForm(SelectedTab);
         }
 
@@ -667,12 +654,35 @@ namespace RFController {
 
         }
 
+        void AddControl(int devKeyToAdd, string roomToAdd) {
+            int roomIdx = Rooms.IndexOf(roomToAdd);
+            Control devControl = GetCopy(Template, 0);
+            AllDevicesControls[roomIdx].Add(devKeyToAdd, devControl);
+            RoomSelector.TabPages[roomIdx].Controls[0].Controls.Add(devControl);
+        }
+
+        void RemoveControl(int devKey, string roomToRemove) {
+            Control toRemove;
+            //string roomToRemove = DevBase.Data[devKey].Room;
+            if (roomToRemove != null) { //delete from room
+                int roomIdx = Rooms.IndexOf(roomToRemove);
+                toRemove = AllDevicesControls[roomIdx][devKey];
+                AllDevicesControls[roomIdx].Remove(devKey);
+                RoomSelector.TabPages[roomIdx].Controls[0].Controls.Remove(toRemove);
+            }
+            //delete from all
+            //toRemove = AllDevicesControls[0][devKey];
+            //AllDevicesControls[0].Remove(devKey);
+            //RoomSelector.TabPages[0].Controls[0].Controls.Remove(toRemove);
+
+        }
+
         private void RoomSelector_SelectedIndexChanged(object sender, EventArgs e) {
             SelectedTab = ((TabControl)sender).SelectedIndex;
             UpdateForm(SelectedTab);
         }
 
-        private void roomsManagerToolStripMenuItem_Click(object sender, EventArgs e) {
+        private void RoomsManagerToolStripMenuItem_Click(object sender, EventArgs e) {
             roomsManagerForm = new RoomsManagerForm(Rooms);
             roomsManagerForm.Show();
             roomsManagerForm.FormClosed += RoomsManagerForm_FormClosed;
@@ -682,8 +692,10 @@ namespace RFController {
             if (RoomSelector.TabCount != Rooms.Count) {
                 if (RoomSelector.TabCount > Rooms.Count) { //delete room tab
                     foreach (TabPage tabpage in RoomSelector.TabPages) {
-                        if (!Rooms.Contains(tabpage.Text)) {
+                        if (!Rooms.Contains(tabpage.Text)) { //find room tab to delete
+                            int tabIdx = RoomSelector.TabPages.IndexOf(tabpage);
                             RoomSelector.TabPages.Remove(tabpage);
+                            AllDevicesControls.RemoveAt(tabIdx); //remove from device controls
                             //break;
                         }
                     }

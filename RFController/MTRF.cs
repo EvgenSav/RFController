@@ -206,11 +206,11 @@ namespace RFController {
             //AddCmdToQueue(txBuf);
             SendData(txBuf);
         }
-        public void Unbind(int channel, int mode, bool unbindAll = false) {
+        public void Unbind(int channel, int mode, int addrF = 0, bool unbindAll = false) {
             Buf txBuf = new Buf();
             txBuf.St = 171;
             txBuf.Mode = mode;
-            if (!unbindAll) {
+            if (!unbindAll) { //clear all MTRF64 memory
                 if (mode == Mode.Rx || mode == Mode.FRx) {
                     txBuf.Ctr = 5;
                 } else {
@@ -223,14 +223,20 @@ namespace RFController {
                 txBuf.D2 = 170;
                 txBuf.D3 = 85;
             }
-            txBuf.Ch = channel;
+            if(addrF != 0) {
+                txBuf.Ch = 0;
+                txBuf.AddrF = addrF;
+            } else {
+                txBuf.Ch = channel;
+                txBuf.AddrF = 0;
+            }
             txBuf.Cmd = NooCmd.Unbind;
             txBuf.Crc = txBuf.GetCrc;
             txBuf.Sp = 172;
 
             AnswerReceived.Set();
-            AddCmdToQueue(txBuf);
-            //SendData(txBuf);
+            //AddCmdToQueue(txBuf);
+            SendData(txBuf);
         }
         public void SendCmd(int channel, int mode, int cmd, int addr = 0,
             int fmt = 0, int d0 = 0, int d1 = 0, int d2 = 0, int d3 = 0,

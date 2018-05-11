@@ -218,7 +218,7 @@
             this.roomsManagerToolStripMenuItem.Name = "roomsManagerToolStripMenuItem";
             this.roomsManagerToolStripMenuItem.Size = new System.Drawing.Size(106, 20);
             this.roomsManagerToolStripMenuItem.Text = "Rooms manager";
-            this.roomsManagerToolStripMenuItem.Click += new System.EventHandler(this.roomsManagerToolStripMenuItem_Click);
+            this.roomsManagerToolStripMenuItem.Click += new System.EventHandler(this.RoomsManagerToolStripMenuItem_Click);
             // 
             // RoomSelector
             // 
