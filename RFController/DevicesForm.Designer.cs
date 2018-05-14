@@ -61,9 +61,9 @@
             this.flowLayoutPanel1.Controls.Add(this.groupBox1);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 6);
             this.flowLayoutPanel1.MaximumSize = new System.Drawing.Size(1100, 0);
-            this.flowLayoutPanel1.MinimumSize = new System.Drawing.Size(150, 250);
+            this.flowLayoutPanel1.MinimumSize = new System.Drawing.Size(150, 125);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(150, 250);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(150, 125);
             this.flowLayoutPanel1.TabIndex = 0;
             // 
             // groupBox1
@@ -91,24 +91,24 @@
             this.settingsToolStripMenuItem,
             this.switchLoopToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(166, 92);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(165, 92);
             // 
             // removeDeviceToolStripMenuItem
             // 
             this.removeDeviceToolStripMenuItem.Name = "removeDeviceToolStripMenuItem";
-            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.removeDeviceToolStripMenuItem.Text = "Remove Device";
             // 
             // firmwareVersionToolStripMenuItem
             // 
             this.firmwareVersionToolStripMenuItem.Name = "firmwareVersionToolStripMenuItem";
-            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.firmwareVersionToolStripMenuItem.Text = "Firmware Version";
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
             // switchLoopToolStripMenuItem
@@ -117,7 +117,7 @@
             this.onTimeToolStripMenuItem,
             this.offTimeToolStripMenuItem});
             this.switchLoopToolStripMenuItem.Name = "switchLoopToolStripMenuItem";
-            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.switchLoopToolStripMenuItem.Text = "Switch Loop";
             // 
             // onTimeToolStripMenuItem

@@ -121,6 +121,7 @@ namespace RFController {
                 }
             }
         }
+
         //timer event handler for switch looping
         private void T2_Elapsed(object sender, System.Timers.ElapsedEventArgs e) {
             if (LoopedDevKey != null) {
@@ -171,14 +172,19 @@ namespace RFController {
             foreach (var EachDeviceControls in AllDevicesControls[currentTabIdx]) {
                 RfDevice Device = DevBase.Data[EachDeviceControls.Key];
                 EachDeviceControls.Value.Text = Device.Name.ToString();
-                //Add context menu items for each device
-                foreach (var item in EachDeviceControls.Value.ContextMenuStrip.Items) {
-                    int contMenuStripHash = item.GetHashCode();
-                    if (!ControlsHash.ContainsKey(contMenuStripHash)) {
-                        ControlsHash.Add(contMenuStripHash, EachDeviceControls.Key);
+                //Add context menu items hash for each device
+                foreach (ToolStripMenuItem item in EachDeviceControls.Value.ContextMenuStrip.Items) {
+                    if (item.Text == "Settings" && Device.Type != NooDevType.PowerUnitF) {
+                        item.Visible = false;
+                        break;
+                    } else {
+                        int contMenuStripHash = item.GetHashCode();
+                        if (!ControlsHash.ContainsKey(contMenuStripHash)) {
+                            ControlsHash.Add(contMenuStripHash, EachDeviceControls.Key);
+                        }
                     }
                 }
-                //
+                //Add groupbox(devices) items hash for each device
                 if (!ControlsHash.ContainsKey(EachDeviceControls.Value.GetHashCode())) {
                     ControlsHash.Add(EachDeviceControls.Value.GetHashCode(), EachDeviceControls.Key);
                 }
@@ -696,7 +702,6 @@ namespace RFController {
                             int tabIdx = RoomSelector.TabPages.IndexOf(tabpage);
                             RoomSelector.TabPages.Remove(tabpage);
                             AllDevicesControls.RemoveAt(tabIdx); //remove from device controls
-                            //break;
                         }
                     }
                 } else { //add room tab
