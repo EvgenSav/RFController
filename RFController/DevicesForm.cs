@@ -176,7 +176,6 @@ namespace RFController {
                 foreach (ToolStripMenuItem item in EachDeviceControls.Value.ContextMenuStrip.Items) {
                     if (item.Text == "Settings" && Device.Type != NooDevType.PowerUnitF) {
                         item.Visible = false;
-                        break;
                     } else {
                         int contMenuStripHash = item.GetHashCode();
                         if (!ControlsHash.ContainsKey(contMenuStripHash)) {
@@ -346,6 +345,7 @@ namespace RFController {
             copy.ContextMenuStrip.Items[1].Click += ShowInfo_Click;
             copy.ContextMenuStrip.Items[2].Click += Settings_Click;
             copy.ContextMenuStrip.Items[3].Click += SwitchLoop_Click;
+            copy.ContextMenuStrip.Items[4].MouseHover += MoveToToolStripMenuItem_MouseHover;
             copy.MouseClick += Device_MouseClick;
 
             foreach (Control item in c.Controls) {
@@ -620,6 +620,7 @@ namespace RFController {
                     MessageBox.Show("Lol");
                     break;
                 case NooDevType.PowerUnitF:
+                    Mtrf64.SendCmd(0, Mode.Service, 0, addr: devToRemove.Addr);
                     Mtrf64.Unbind(0, Mode.FTx, devToRemove.Addr);
                     //MessageBox.Show("Lol");
                     break;
@@ -711,10 +712,49 @@ namespace RFController {
                     }
                     foreach (var item in Rooms.Except(roomsTab)) {
                         RoomSelector.TabPages.Add(item);
+                        RoomSelector.TabPages[Rooms.IndexOf(item)].Controls.Add(new FlowLayoutPanel {
+                            AutoSize = flowLayoutPanel1.AutoSize,
+                            AutoSizeMode = flowLayoutPanel1.AutoSizeMode,
+                            BackColor = flowLayoutPanel1.BackColor,
+                            MinimumSize = flowLayoutPanel1.MinimumSize,
+                            MaximumSize = flowLayoutPanel1.MaximumSize,
+                            Location = flowLayoutPanel1.Location
+                        });
                         AllDevicesControls.Add(new SortedDictionary<int, Control>());
+
                     }
                 }
             }
+        }
+
+        private void MoveToToolStripMenuItem_MouseHover(object sender, EventArgs e) {
+            int DevKey = ControlsHash[sender.GetHashCode()];
+            ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
+            List<string> curRoom = new List<string> {
+                Rooms[SelectedTab]
+            };
+            menuItem.DropDownItems.Clear();
+            int dropDownItemIdx = 0;
+            foreach (string item in Rooms.Except(curRoom)) {
+                menuItem.DropDownItems.Add(item);
+                menuItem.DropDownItems[dropDownItemIdx].Click += MoveToNewRoom_Click;
+                int hash = menuItem.DropDownItems[dropDownItemIdx].GetHashCode();
+                if (!ControlsHash.ContainsKey(hash)) {
+                    ControlsHash.Add(hash, DevKey);
+                }
+                dropDownItemIdx++;
+            }
+            
+        }
+
+        private void MoveToNewRoom_Click(object sender, EventArgs e) {
+            ToolStripDropDownItem toolStripDropDownItem = (ToolStripDropDownItem)sender;
+            int hash = sender.GetHashCode();
+            int devKey = ControlsHash[hash];
+
+            RemoveControl(devKey, Rooms[SelectedTab]);
+            AddControl(devKey, toolStripDropDownItem.Text);
+            toolStripDropDownItem.Dispose();
         }
     }
 }

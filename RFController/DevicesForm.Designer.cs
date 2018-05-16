@@ -33,6 +33,7 @@
             this.switchLoopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
             this.offTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
+            this.replaceToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.TypeBox = new System.Windows.Forms.Label();
             this.StateBox = new System.Windows.Forms.Label();
             this.StatePictBox = new System.Windows.Forms.PictureBox();
@@ -89,26 +90,27 @@
             this.removeDeviceToolStripMenuItem,
             this.firmwareVersionToolStripMenuItem,
             this.settingsToolStripMenuItem,
-            this.switchLoopToolStripMenuItem});
+            this.switchLoopToolStripMenuItem,
+            this.replaceToToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(165, 92);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(181, 136);
             // 
             // removeDeviceToolStripMenuItem
             // 
             this.removeDeviceToolStripMenuItem.Name = "removeDeviceToolStripMenuItem";
-            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.removeDeviceToolStripMenuItem.Text = "Remove Device";
             // 
             // firmwareVersionToolStripMenuItem
             // 
             this.firmwareVersionToolStripMenuItem.Name = "firmwareVersionToolStripMenuItem";
-            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.firmwareVersionToolStripMenuItem.Text = "Firmware Version";
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
             // switchLoopToolStripMenuItem
@@ -117,7 +119,7 @@
             this.onTimeToolStripMenuItem,
             this.offTimeToolStripMenuItem});
             this.switchLoopToolStripMenuItem.Name = "switchLoopToolStripMenuItem";
-            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.switchLoopToolStripMenuItem.Text = "Switch Loop";
             // 
             // onTimeToolStripMenuItem
@@ -131,6 +133,13 @@
             this.offTimeToolStripMenuItem.Name = "offTimeToolStripMenuItem";
             this.offTimeToolStripMenuItem.Size = new System.Drawing.Size(212, 23);
             this.offTimeToolStripMenuItem.Text = "Off Time";
+            // 
+            // replaceToToolStripMenuItem
+            // 
+            this.replaceToToolStripMenuItem.Name = "replaceToToolStripMenuItem";
+            this.replaceToToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.replaceToToolStripMenuItem.Text = "Move to";
+            this.replaceToToolStripMenuItem.MouseHover += new System.EventHandler(this.MoveToToolStripMenuItem_MouseHover);
             // 
             // TypeBox
             // 
@@ -292,5 +301,6 @@
         private System.Windows.Forms.TabControl RoomSelector;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.ToolStripMenuItem roomsManagerToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem replaceToToolStripMenuItem;
     }
 }
