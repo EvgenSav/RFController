@@ -61,7 +61,7 @@
             this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanel1.Controls.Add(this.groupBox1);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 6);
-            this.flowLayoutPanel1.MaximumSize = new System.Drawing.Size(1100, 0);
+            this.flowLayoutPanel1.MaximumSize = new System.Drawing.Size(650, 0);
             this.flowLayoutPanel1.MinimumSize = new System.Drawing.Size(150, 125);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
             this.flowLayoutPanel1.Size = new System.Drawing.Size(150, 125);
@@ -93,24 +93,24 @@
             this.switchLoopToolStripMenuItem,
             this.replaceToToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(181, 136);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(166, 114);
             // 
             // removeDeviceToolStripMenuItem
             // 
             this.removeDeviceToolStripMenuItem.Name = "removeDeviceToolStripMenuItem";
-            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.removeDeviceToolStripMenuItem.Text = "Remove Device";
             // 
             // firmwareVersionToolStripMenuItem
             // 
             this.firmwareVersionToolStripMenuItem.Name = "firmwareVersionToolStripMenuItem";
-            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.firmwareVersionToolStripMenuItem.Text = "Firmware Version";
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
             // switchLoopToolStripMenuItem
@@ -119,7 +119,7 @@
             this.onTimeToolStripMenuItem,
             this.offTimeToolStripMenuItem});
             this.switchLoopToolStripMenuItem.Name = "switchLoopToolStripMenuItem";
-            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.switchLoopToolStripMenuItem.Text = "Switch Loop";
             // 
             // onTimeToolStripMenuItem
@@ -137,9 +137,9 @@
             // replaceToToolStripMenuItem
             // 
             this.replaceToToolStripMenuItem.Name = "replaceToToolStripMenuItem";
-            this.replaceToToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.replaceToToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.replaceToToolStripMenuItem.Text = "Move to";
-            this.replaceToToolStripMenuItem.MouseHover += new System.EventHandler(this.MoveToToolStripMenuItem_MouseHover);
+            this.replaceToToolStripMenuItem.MouseHover += new System.EventHandler(this.MoveTo_MouseHover);
             // 
             // TypeBox
             // 

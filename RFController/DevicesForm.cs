@@ -324,6 +324,15 @@ namespace RFController {
             }
         }
 
+        //Each device control it's a GroupBox control.
+        //GroupBox control consists of:
+        //1. ContextMenuStrip
+        //   1.1 Remove device
+        //   1.2 Show info
+        //   1.3 Settings
+        //   1.4 Switch Loop(for test, need to delete)
+        //2. StatePictBox(green square in the up-right corner of groupbox) indicates On-Off state of power units
+        //3. StateBox indicates bright lvl of  power units
         private Control GetCopy(Control c, int i) {
             Type t;
             ConstructorInfo[] ci;
@@ -341,11 +350,12 @@ namespace RFController {
                 copy.ContextMenuStrip.Items.Add(item.Text);
             }
 
+            //Context menu for devices
             copy.ContextMenuStrip.Items[0].Click += RemoveDevice_Click;
             copy.ContextMenuStrip.Items[1].Click += ShowInfo_Click;
             copy.ContextMenuStrip.Items[2].Click += Settings_Click;
             copy.ContextMenuStrip.Items[3].Click += SwitchLoop_Click;
-            copy.ContextMenuStrip.Items[4].MouseHover += MoveToToolStripMenuItem_MouseHover;
+            copy.ContextMenuStrip.Items[4].MouseHover += MoveTo_MouseHover;
             copy.MouseClick += Device_MouseClick;
 
             foreach (Control item in c.Controls) {
@@ -664,8 +674,11 @@ namespace RFController {
         void AddControl(int devKeyToAdd, string roomToAdd) {
             int roomIdx = Rooms.IndexOf(roomToAdd);
             Control devControl = GetCopy(Template, 0);
-            AllDevicesControls[roomIdx].Add(devKeyToAdd, devControl);
-            RoomSelector.TabPages[roomIdx].Controls[0].Controls.Add(devControl);
+            if (!AllDevicesControls[roomIdx].ContainsKey(devKeyToAdd)) {
+                AllDevicesControls[roomIdx].Add(devKeyToAdd, devControl);
+                RoomSelector.TabPages[roomIdx].Controls[0].Controls.Add(devControl);
+            }
+            
         }
 
         void RemoveControl(int devKey, string roomToRemove) {
@@ -677,11 +690,6 @@ namespace RFController {
                 AllDevicesControls[roomIdx].Remove(devKey);
                 RoomSelector.TabPages[roomIdx].Controls[0].Controls.Remove(toRemove);
             }
-            //delete from all
-            //toRemove = AllDevicesControls[0][devKey];
-            //AllDevicesControls[0].Remove(devKey);
-            //RoomSelector.TabPages[0].Controls[0].Controls.Remove(toRemove);
-
         }
 
         private void RoomSelector_SelectedIndexChanged(object sender, EventArgs e) {
@@ -695,6 +703,7 @@ namespace RFController {
             roomsManagerForm.FormClosed += RoomsManagerForm_FormClosed;
         }
 
+        //Updating form after add/remove room
         private void RoomsManagerForm_FormClosed(object sender, FormClosedEventArgs e) {
             if (RoomSelector.TabCount != Rooms.Count) {
                 if (RoomSelector.TabCount > Rooms.Count) { //delete room tab
@@ -727,7 +736,8 @@ namespace RFController {
             }
         }
 
-        private void MoveToToolStripMenuItem_MouseHover(object sender, EventArgs e) {
+        //on mouse hover this function creates room list for mooving
+        private void MoveTo_MouseHover(object sender, EventArgs e) {
             int DevKey = ControlsHash[sender.GetHashCode()];
             ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
             List<string> curRoom = new List<string> {
@@ -754,6 +764,7 @@ namespace RFController {
 
             RemoveControl(devKey, Rooms[SelectedTab]);
             AddControl(devKey, toolStripDropDownItem.Text);
+            DevBase.Data[devKey].Room = toolStripDropDownItem.Text;
             toolStripDropDownItem.Dispose();
         }
     }
