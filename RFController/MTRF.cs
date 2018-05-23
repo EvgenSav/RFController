@@ -13,6 +13,15 @@ namespace RFController {
         SerialPort serialPort;
         public Buf rxBuf;
         public Buf txBuf;
+        public string ConnectedPortName {
+            get {
+                if (serialPort != null && serialPort.IsOpen) {
+                    return serialPort.PortName;
+                } else {
+                    return "Not connected";
+                }
+            }
+        }
 
         public float[] LastTempBuf { get; private set; }
         //public MtrfMode[] modes = {
@@ -80,7 +89,7 @@ namespace RFController {
                 ClosePort(portName);
                 AnswerReceived2.Reset();
                 if (rxBuf.AddrF != 0) {
-                    connectedMtrfs.Add(new Mtrf(portName,rxBuf.AddrF));
+                    connectedMtrfs.Add(new Mtrf(portName, rxBuf.AddrF));
                 }
             }
             return connectedMtrfs;
@@ -119,13 +128,13 @@ namespace RFController {
             }
         }
         public int OpenPort(string pName) {
-            if (pName != null) {                
+            if (pName != null) {
                 if (!serialPort.IsOpen) {
                     serialPort.PortName = pName;
                     serialPort.Open();
                 }
                 return 0;
-            }   else {
+            } else {
                 return -1;
             }
         }
@@ -223,7 +232,7 @@ namespace RFController {
                 txBuf.D2 = 170;
                 txBuf.D3 = 85;
             }
-            if(addrF != 0) {
+            if (addrF != 0) {
                 txBuf.Ch = 0;
                 txBuf.AddrF = addrF;
             } else {
@@ -267,11 +276,11 @@ namespace RFController {
         }
         #endregion
     }
-    
+
 }
 
-    
-   
+
+
 
 public struct Mtrf {
     public Mtrf(string pName, int addr) {
@@ -280,7 +289,8 @@ public struct Mtrf {
     }
     public string ComPortName { get; }
     public int MtrfAddr { get; }
-    public string Info { get {
+    public string Info {
+        get {
             return String.Format("{0}, MTRF64: {1}", ComPortName, MtrfAddr);
         }
     }
