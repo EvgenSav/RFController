@@ -45,6 +45,7 @@
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.Adr = new System.Windows.Forms.NumericUpDown();
+            this.label9 = new System.Windows.Forms.Label();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Format)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.D0)).BeginInit();
@@ -145,16 +146,17 @@
             // 
             // CmdSel
             // 
+            this.CmdSel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.CmdSel.FormattingEnabled = true;
-            this.CmdSel.Location = new System.Drawing.Point(354, 91);
+            this.CmdSel.Location = new System.Drawing.Point(354, 86);
             this.CmdSel.Name = "CmdSel";
-            this.CmdSel.Size = new System.Drawing.Size(105, 21);
+            this.CmdSel.Size = new System.Drawing.Size(105, 24);
             this.CmdSel.TabIndex = 18;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(374, 73);
+            this.label4.Location = new System.Drawing.Point(381, 70);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(28, 13);
             this.label4.TabIndex = 19;
@@ -244,11 +246,21 @@
             this.Adr.Size = new System.Drawing.Size(63, 23);
             this.Adr.TabIndex = 29;
             // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(114, 161);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(23, 13);
+            this.label9.TabIndex = 30;
+            this.label9.Text = "Adr";
+            // 
             // ServiceForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(617, 241);
+            this.Controls.Add(this.label9);
             this.Controls.Add(this.Adr);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label7);
@@ -308,6 +320,7 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown Adr;
+        private System.Windows.Forms.Label label9;
     }
 }
 

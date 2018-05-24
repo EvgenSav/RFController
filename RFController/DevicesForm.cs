@@ -147,7 +147,7 @@ namespace RFController {
                     Mtrf64.SendCmd(0, Mode.FTx, NooCmd.SetBrightness, Device.Addr, d0: DevBright);
                 }
             } else if (Device.Type == NooDevType.PowerUnit) { //Noo
-                DevBright = Round(((float)result / 100) * 128);
+                DevBright = 28 + result;
                 Mtrf64.SendCmd(Device.Channel, Mode.Tx, NooCmd.SetBrightness, fmt: 1, d0: DevBright);
             }
         }
@@ -217,8 +217,17 @@ namespace RFController {
                             if (Device.Type == NooDevType.PowerUnit || Device.Type == NooDevType.PowerUnitF) {
                                 int brightBoxHash = control.GetHashCode();
                                 control.Visible = true;
-                                float bright = ((float)Device.Bright / 255) * 100;
-                                control.Text = Round(bright).ToString() + " %";
+                                if (Device.Type == NooDevType.PowerUnitF) {
+                                    float bright = ((float)Device.Bright / 255) * 100;
+                                    control.Text = Round(bright).ToString() + " %";
+                                } else {
+                                    if (Device.State != 0 && Device.Bright > 28) {
+                                        control.Text = (Device.Bright - 28).ToString() + " %";
+                                    } else {
+                                        control.Text = 0.ToString() + " %";
+                                    }
+                                }
+                                
 
                                 if (!ControlsHash.ContainsKey(brightBoxHash)) {
                                     ControlsHash.Add(brightBoxHash, EachDeviceControls.Key);
@@ -441,7 +450,9 @@ namespace RFController {
                     case NooCmd.On:
                         if (Mtrf64.rxBuf.Mode == 0) {
                             Device.State = 1;
-                            Device.Bright = Mtrf64.rxBuf.D0;
+                            if (Device.Type == NooDevType.PowerUnitF) {
+                                Device.Bright = Mtrf64.rxBuf.D0;
+                            }
                         }
                         break;
                     case NooCmd.Off:
