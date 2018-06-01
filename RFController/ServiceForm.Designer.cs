@@ -133,7 +133,7 @@
             this.SendBtn.TabIndex = 15;
             this.SendBtn.Text = "Send";
             this.SendBtn.UseVisualStyleBackColor = true;
-            this.SendBtn.Click += new System.EventHandler(this.BindBtn_Click);
+            this.SendBtn.Click += new System.EventHandler(this.SendBtn_Click);
             // 
             // label3
             // 

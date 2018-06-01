@@ -70,10 +70,10 @@ namespace RFController {
             }
         }
 
-        private void BindBtn_Click(object sender, EventArgs e) {
+        private void SendBtn_Click(object sender, EventArgs e) {
             if (ChannelSel.SelectedIndex != -1 && ModeSel.SelectedIndex != -1 && CmdSel.SelectedIndex != -1) {
                 Mtrf64.SendCmd(ChannelSel.SelectedIndex, (int)ModeSel.SelectedValue, (int)CmdSel.SelectedValue,
-                    (int)Adr.Value, (int)Format.Value, (int)D0.Value, (int)D1.Value, (int)D2.Value, (int)D3.Value);
+                    (int)Adr.Value, fmt:(int)Format.Value, (int)D0.Value, (int)D1.Value, (int)D2.Value, (int)D3.Value);
             }
         }
     }

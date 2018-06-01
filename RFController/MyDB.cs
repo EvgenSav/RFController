@@ -42,6 +42,7 @@ namespace RFController {
 
     [Serializable]
     public class RfDevice {
+        List<int> redirect = new List<int>(16);
         public int Channel { get; set; }
         public int Type { get; set; }
         public string Name { get; set; }
@@ -56,7 +57,14 @@ namespace RFController {
         public int DimCorrLvlLow { get; set; }
         public int OnLvl { get; set; }
         public string Room { get; set; }
-
+        public List<int> Redirect { get {
+                return redirect;
+            }
+        }
+        public int AddRedirect(int devid) {
+            redirect.Add(devid);
+            return 0;
+        }
         public string GetDeviceType() {
             string res = "";
             switch (Type) {

@@ -34,13 +34,13 @@
             this.onTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
             this.offTimeToolStripMenuItem = new System.Windows.Forms.ToolStripTextBox();
             this.replaceToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.redirectToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.TypeBox = new System.Windows.Forms.Label();
             this.StateBox = new System.Windows.Forms.Label();
             this.StatePictBox = new System.Windows.Forms.PictureBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.showLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ShowLog_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.Temperature_MenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.serviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewDeviceMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.roomsManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -91,26 +91,27 @@
             this.firmwareVersionToolStripMenuItem,
             this.settingsToolStripMenuItem,
             this.switchLoopToolStripMenuItem,
-            this.replaceToToolStripMenuItem});
+            this.replaceToToolStripMenuItem,
+            this.redirectToToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(166, 114);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(165, 136);
             // 
             // removeDeviceToolStripMenuItem
             // 
             this.removeDeviceToolStripMenuItem.Name = "removeDeviceToolStripMenuItem";
-            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.removeDeviceToolStripMenuItem.Text = "Remove Device";
             // 
             // firmwareVersionToolStripMenuItem
             // 
             this.firmwareVersionToolStripMenuItem.Name = "firmwareVersionToolStripMenuItem";
-            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.firmwareVersionToolStripMenuItem.Text = "Firmware Version";
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
             // switchLoopToolStripMenuItem
@@ -119,7 +120,7 @@
             this.onTimeToolStripMenuItem,
             this.offTimeToolStripMenuItem});
             this.switchLoopToolStripMenuItem.Name = "switchLoopToolStripMenuItem";
-            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.switchLoopToolStripMenuItem.Text = "Switch Loop";
             // 
             // onTimeToolStripMenuItem
@@ -137,9 +138,16 @@
             // replaceToToolStripMenuItem
             // 
             this.replaceToToolStripMenuItem.Name = "replaceToToolStripMenuItem";
-            this.replaceToToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.replaceToToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.replaceToToolStripMenuItem.Text = "Move to";
             this.replaceToToolStripMenuItem.MouseHover += new System.EventHandler(this.MoveTo_MouseHover);
+            // 
+            // redirectToToolStripMenuItem
+            // 
+            this.redirectToToolStripMenuItem.Name = "redirectToToolStripMenuItem";
+            this.redirectToToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.redirectToToolStripMenuItem.Text = "Redirect To";
+            this.redirectToToolStripMenuItem.Click += new System.EventHandler(this.RedirectTo_Click);
             // 
             // TypeBox
             // 
@@ -187,7 +195,6 @@
             // 
             this.showLogToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ShowLog_MenuItem,
-            this.Temperature_MenuItem,
             this.serviceToolStripMenuItem,
             this.addNewDeviceMenuItem});
             this.showLogToolStripMenuItem.Name = "showLogToolStripMenuItem";
@@ -200,13 +207,6 @@
             this.ShowLog_MenuItem.Size = new System.Drawing.Size(158, 22);
             this.ShowLog_MenuItem.Text = "ShowLog";
             this.ShowLog_MenuItem.Click += new System.EventHandler(this.ShowLog_MenuItem_Click);
-            // 
-            // Temperature_MenuItem
-            // 
-            this.Temperature_MenuItem.Name = "Temperature_MenuItem";
-            this.Temperature_MenuItem.Size = new System.Drawing.Size(158, 22);
-            this.Temperature_MenuItem.Text = "Temperature";
-            this.Temperature_MenuItem.Click += new System.EventHandler(this.Temperature_MenuItem_Click);
             // 
             // serviceToolStripMenuItem
             // 
@@ -289,7 +289,6 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem showLogToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ShowLog_MenuItem;
-        private System.Windows.Forms.ToolStripMenuItem Temperature_MenuItem;
         private System.Windows.Forms.ToolStripMenuItem serviceToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem addNewDeviceMenuItem;
         private System.Windows.Forms.ToolStripMenuItem switchLoopToolStripMenuItem;
@@ -302,5 +301,6 @@
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.ToolStripMenuItem roomsManagerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem replaceToToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem redirectToToolStripMenuItem;
     }
 }

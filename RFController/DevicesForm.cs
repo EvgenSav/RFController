@@ -15,7 +15,6 @@ namespace RFController {
     public partial class DevicesForm : Form {
         RoomsManagerForm roomsManagerForm;
         ServiceForm serviceForm;
-        TempForm tempForm;
         LogForm logForm;
         AddNewDevForm addNewDevForm;
         SettingsForm settingsForm;
@@ -155,10 +154,10 @@ namespace RFController {
         private void DevicesForm_FormClosing(object sender, FormClosingEventArgs e) {
             Mtrf64.NewDataReceived -= Dev1_NewDataReceived;
             if (logForm != null) logForm.Close();
-            if (tempForm != null) tempForm.Close();
             if (serviceForm != null) serviceForm.Close();
             if (tempGraphForm != null) tempGraphForm.Close();
             if (roomsManagerForm != null) roomsManagerForm.Close();
+
             TemperatureLog.SaveToFile(String.Format("{0} templog.json", DateTime.Now.ToShortDateString()));
             DevBase.SaveToFile("BindedDeviceList.json");
 
@@ -172,15 +171,38 @@ namespace RFController {
             foreach (var EachDeviceControls in AllDevicesControls[currentTabIdx]) {
                 RfDevice Device = DevBase.Data[EachDeviceControls.Key];
                 EachDeviceControls.Value.Text = Device.Name.ToString();
+
                 //Add context menu items hash for each device
                 foreach (ToolStripMenuItem item in EachDeviceControls.Value.ContextMenuStrip.Items) {
-                    if (item.Text == "Settings" && Device.Type != NooDevType.PowerUnitF) {
-                        item.Visible = false;
-                    } else {
-                        int contMenuStripHash = item.GetHashCode();
-                        if (!ControlsHash.ContainsKey(contMenuStripHash)) {
-                            ControlsHash.Add(contMenuStripHash, EachDeviceControls.Key);
-                        }
+                    int contMenuStripHash = item.GetHashCode();
+                    switch (item.Text) {
+                        case "Settings":
+                            if (Device.Type == NooDevType.PowerUnitF) {
+                                //int contMenuStripHash = item.GetHashCode();
+                                if (!ControlsHash.ContainsKey(contMenuStripHash)) {
+                                    ControlsHash.Add(contMenuStripHash, EachDeviceControls.Key);
+                                }
+                            } else {
+                                item.Visible = false;
+                            }
+                            break;
+                        case "Redirect To":
+                            if (Device.Type != NooDevType.PowerUnit && Device.Type != NooDevType.PowerUnit) {
+                                //int contMenuStripHash = item.GetHashCode();
+                                if (!ControlsHash.ContainsKey(contMenuStripHash)) {
+                                    item.MouseHover += RedirectTo_MouseHover;
+                                    ControlsHash.Add(contMenuStripHash, EachDeviceControls.Key);
+                                }
+                            } else {
+                                item.Visible = false;
+                            }
+                            break;
+                        default:
+                            //int contMenuStripHash = item.GetHashCode();
+                            if (!ControlsHash.ContainsKey(contMenuStripHash)) {
+                                ControlsHash.Add(contMenuStripHash, EachDeviceControls.Key);
+                            }
+                            break;
                     }
                 }
                 //Add groupbox(devices) items hash for each device
@@ -227,7 +249,7 @@ namespace RFController {
                                         control.Text = 0.ToString() + " %";
                                     }
                                 }
-                                
+
 
                                 if (!ControlsHash.ContainsKey(brightBoxHash)) {
                                     ControlsHash.Add(brightBoxHash, EachDeviceControls.Key);
@@ -286,6 +308,37 @@ namespace RFController {
             s1.Height = s1.Height + 35;
             s1.Width = s1.Width + 15;
             RoomSelector.Size = s1;
+        }
+
+
+        private void RedirectTo_MouseHover(object sender, EventArgs e) {
+            ToolStripDropDownItem toolStripDropDownItem = (ToolStripDropDownItem)sender;
+            var redirectListeners = DevBase.Data.Where((x) =>
+               x.Value.Type == NooDevType.PowerUnit || x.Value.Type == NooDevType.PowerUnitF
+            );
+            toolStripDropDownItem.DropDownItems.Clear();
+            foreach (var item in redirectListeners) {
+                toolStripDropDownItem.DropDownItems.Add(item.Value.Name);
+            }
+            foreach (ToolStripDropDownItem item in toolStripDropDownItem.DropDownItems) {
+                item.Click += RedirectToSelected_Click;
+                ControlsHash.Add(item.GetHashCode(), ControlsHash[sender.GetHashCode()]);
+            }
+
+        }
+
+        private void RedirectToSelected_Click(object sender, EventArgs e) {
+            ToolStripDropDownItem toolStripDropDownItem = (ToolStripDropDownItem)sender;
+            var findDev = DevBase.Data.Where(dev => dev.Value.Name == toolStripDropDownItem.Name);
+            int hash = sender.GetHashCode();
+            RfDevice redirectSource = DevBase.Data[ControlsHash[hash]];
+            foreach (var item in findDev) {
+            }
+            ///redirectSource.Redirect.Add(findDev.);
+            foreach (var item in redirectSource.Redirect) {
+                MessageBox.Show(redirectSource.Name + "/n" + item);
+            }
+
         }
 
         //reset focus from Bright Regulating Label        
@@ -365,6 +418,7 @@ namespace RFController {
             copy.ContextMenuStrip.Items[2].Click += Settings_Click;
             copy.ContextMenuStrip.Items[3].Click += SwitchLoop_Click;
             copy.ContextMenuStrip.Items[4].MouseHover += MoveTo_MouseHover;
+
             copy.MouseClick += Device_MouseClick;
 
             foreach (Control item in c.Controls) {
@@ -564,19 +618,6 @@ namespace RFController {
                 ShowLog_MenuItem.Checked = false;
             }
         }
-        private void Temperature_MenuItem_Click(object sender, EventArgs e) {
-            if (!Temperature_MenuItem.Checked) {
-                tempForm = new TempForm(Mtrf64, TemperatureLog);
-                tempForm.FormClosing += (obj, args) => {
-                    Temperature_MenuItem.Checked = false;
-                };
-                tempForm.Show();
-                Temperature_MenuItem.Checked = true;
-            } else {
-                tempForm.Close();
-                Temperature_MenuItem.Checked = false;
-            }
-        }
 
         private void AddNewDevice_MenuItem_Click(object sender, EventArgs e) {
             addNewDevForm = new AddNewDevForm(DevBase, Mtrf64, Rooms);
@@ -604,6 +645,14 @@ namespace RFController {
                 serviceToolStripMenuItem.Checked = false;
             }
         }
+        private void RoomsManagerToolStripMenuItem_Click(object sender, EventArgs e) {
+            if (roomsManagerForm != null) {
+                roomsManagerForm.Close();
+            }
+            roomsManagerForm = new RoomsManagerForm(Rooms);
+            roomsManagerForm.Show();
+            roomsManagerForm.FormClosed += RoomsManagerForm_FormClosed;
+        }
         #endregion
         #region Context menu
         private void Settings_Click(object sender, EventArgs e) {
@@ -624,12 +673,12 @@ namespace RFController {
         }
 
         private void RemoveDevice_Click(object sender, EventArgs e) {
-            
+
             int devKey = ControlsHash[sender.GetHashCode()];
             //find rooms that contains device
             var roomsToRemove = from room in AllDevicesControls
-                    where room.ContainsKey(devKey)
-                    select  Rooms[AllDevicesControls.IndexOf(room)];
+                                where room.ContainsKey(devKey)
+                                select Rooms[AllDevicesControls.IndexOf(room)];
             //delete controls of device in each room
             foreach (string roomToRemove in roomsToRemove) {
                 RemoveControl(devKey, roomToRemove);
@@ -654,10 +703,10 @@ namespace RFController {
                     MessageBox.Show("Lol");
                     break;
             }
-            
+
             //Remove device from base
             DevBase.Data.Remove(devKey);
-            
+
             UpdateForm(SelectedTab);
         }
 
@@ -671,6 +720,42 @@ namespace RFController {
                 tmi.Checked = false;
                 t2.Stop();
             }
+        }
+        //on mouse hover this function creates room list for mooving
+        private void MoveTo_MouseHover(object sender, EventArgs e) {
+            int DevKey = ControlsHash[sender.GetHashCode()];
+            ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
+            List<string> curRoom = new List<string> {
+                Rooms[SelectedTab]
+            };
+            menuItem.DropDownItems.Clear();
+            int dropDownItemIdx = 0;
+            foreach (string item in Rooms.Except(curRoom)) {
+                menuItem.DropDownItems.Add(item);
+                menuItem.DropDownItems[dropDownItemIdx].Click += MoveToNewRoom_Click;
+                int hash = menuItem.DropDownItems[dropDownItemIdx].GetHashCode();
+                if (!ControlsHash.ContainsKey(hash)) {
+                    ControlsHash.Add(hash, DevKey);
+                }
+                dropDownItemIdx++;
+            }
+
+        }
+
+        private void MoveToNewRoom_Click(object sender, EventArgs e) {
+            ToolStripDropDownItem toolStripDropDownItem = (ToolStripDropDownItem)sender;
+            int hash = sender.GetHashCode();
+            int devKey = ControlsHash[hash];
+
+            RemoveControl(devKey, Rooms[SelectedTab]);
+            AddControl(devKey, toolStripDropDownItem.Text);
+            DevBase.Data[devKey].Room = toolStripDropDownItem.Text;
+            toolStripDropDownItem.Dispose();
+        }
+
+        private void RedirectTo_Click(object sender, EventArgs e) {
+
+
         }
         #endregion
 
@@ -689,7 +774,7 @@ namespace RFController {
                 AllDevicesControls[roomIdx].Add(devKeyToAdd, devControl);
                 RoomSelector.TabPages[roomIdx].Controls[0].Controls.Add(devControl);
             }
-            
+
         }
 
         void RemoveControl(int devKey, string roomToRemove) {
@@ -708,11 +793,7 @@ namespace RFController {
             UpdateForm(SelectedTab);
         }
 
-        private void RoomsManagerToolStripMenuItem_Click(object sender, EventArgs e) {
-            roomsManagerForm = new RoomsManagerForm(Rooms);
-            roomsManagerForm.Show();
-            roomsManagerForm.FormClosed += RoomsManagerForm_FormClosed;
-        }
+
 
         //Updating form after add/remove room
         private void RoomsManagerForm_FormClosed(object sender, FormClosedEventArgs e) {
@@ -747,36 +828,6 @@ namespace RFController {
             }
         }
 
-        //on mouse hover this function creates room list for mooving
-        private void MoveTo_MouseHover(object sender, EventArgs e) {
-            int DevKey = ControlsHash[sender.GetHashCode()];
-            ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
-            List<string> curRoom = new List<string> {
-                Rooms[SelectedTab]
-            };
-            menuItem.DropDownItems.Clear();
-            int dropDownItemIdx = 0;
-            foreach (string item in Rooms.Except(curRoom)) {
-                menuItem.DropDownItems.Add(item);
-                menuItem.DropDownItems[dropDownItemIdx].Click += MoveToNewRoom_Click;
-                int hash = menuItem.DropDownItems[dropDownItemIdx].GetHashCode();
-                if (!ControlsHash.ContainsKey(hash)) {
-                    ControlsHash.Add(hash, DevKey);
-                }
-                dropDownItemIdx++;
-            }
-            
-        }
 
-        private void MoveToNewRoom_Click(object sender, EventArgs e) {
-            ToolStripDropDownItem toolStripDropDownItem = (ToolStripDropDownItem)sender;
-            int hash = sender.GetHashCode();
-            int devKey = ControlsHash[hash];
-
-            RemoveControl(devKey, Rooms[SelectedTab]);
-            AddControl(devKey, toolStripDropDownItem.Text);
-            DevBase.Data[devKey].Room = toolStripDropDownItem.Text;
-            toolStripDropDownItem.Dispose();
-        }
     }
 }
