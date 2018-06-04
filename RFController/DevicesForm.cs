@@ -694,8 +694,8 @@ namespace RFController {
                 case NooDevType.PowerUnitF:
                     DialogResult step21 = MessageBox.Show("Delete device?", "Warning!", MessageBoxButtons.YesNo);
                     if (step21 == DialogResult.Yes) {
-                        Mtrf64.SendCmd(0, Mode.Service, 0, addr: devToRemove.Addr);
-                        Mtrf64.Unbind(0, Mode.FTx, devToRemove.Addr);
+                        Mtrf64.SendCmd(0, Mode.FTx, NooCmd.Service, addr: devToRemove.Addr,d0:1);
+                        Mtrf64.SendCmd(0, Mode.FTx, NooCmd.Unbind, addr: devToRemove.Addr);
                         //delete controls of device in each room
                         foreach (string roomToRemove in roomsToRemove) {
                             RemoveControl(devKey, roomToRemove);
