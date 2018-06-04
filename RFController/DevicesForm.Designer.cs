@@ -147,7 +147,6 @@
             this.redirectToToolStripMenuItem.Name = "redirectToToolStripMenuItem";
             this.redirectToToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.redirectToToolStripMenuItem.Text = "Redirect To";
-            this.redirectToToolStripMenuItem.Click += new System.EventHandler(this.RedirectTo_Click);
             // 
             // TypeBox
             // 
@@ -204,21 +203,21 @@
             // ShowLog_MenuItem
             // 
             this.ShowLog_MenuItem.Name = "ShowLog_MenuItem";
-            this.ShowLog_MenuItem.Size = new System.Drawing.Size(158, 22);
+            this.ShowLog_MenuItem.Size = new System.Drawing.Size(180, 22);
             this.ShowLog_MenuItem.Text = "ShowLog";
             this.ShowLog_MenuItem.Click += new System.EventHandler(this.ShowLog_MenuItem_Click);
             // 
             // serviceToolStripMenuItem
             // 
             this.serviceToolStripMenuItem.Name = "serviceToolStripMenuItem";
-            this.serviceToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.serviceToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.serviceToolStripMenuItem.Text = "Service";
             this.serviceToolStripMenuItem.Click += new System.EventHandler(this.ServiceToolStrip_MenuItem_Click);
             // 
             // addNewDeviceMenuItem
             // 
             this.addNewDeviceMenuItem.Name = "addNewDeviceMenuItem";
-            this.addNewDeviceMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.addNewDeviceMenuItem.Size = new System.Drawing.Size(180, 22);
             this.addNewDeviceMenuItem.Text = "Add new device";
             this.addNewDeviceMenuItem.Click += new System.EventHandler(this.AddNewDevice_MenuItem_Click);
             // 

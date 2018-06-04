@@ -311,35 +311,7 @@ namespace RFController {
         }
 
 
-        private void RedirectTo_MouseHover(object sender, EventArgs e) {
-            ToolStripDropDownItem toolStripDropDownItem = (ToolStripDropDownItem)sender;
-            var redirectListeners = DevBase.Data.Where((x) =>
-               x.Value.Type == NooDevType.PowerUnit || x.Value.Type == NooDevType.PowerUnitF
-            );
-            toolStripDropDownItem.DropDownItems.Clear();
-            foreach (var item in redirectListeners) {
-                toolStripDropDownItem.DropDownItems.Add(item.Value.Name);
-            }
-            foreach (ToolStripDropDownItem item in toolStripDropDownItem.DropDownItems) {
-                item.Click += RedirectToSelected_Click;
-                ControlsHash.Add(item.GetHashCode(), ControlsHash[sender.GetHashCode()]);
-            }
 
-        }
-
-        private void RedirectToSelected_Click(object sender, EventArgs e) {
-            ToolStripDropDownItem toolStripDropDownItem = (ToolStripDropDownItem)sender;
-            var findDev = DevBase.Data.Where(dev => dev.Value.Name == toolStripDropDownItem.Name);
-            int hash = sender.GetHashCode();
-            RfDevice redirectSource = DevBase.Data[ControlsHash[hash]];
-            foreach (var item in findDev) {
-            }
-            ///redirectSource.Redirect.Add(findDev.);
-            foreach (var item in redirectSource.Redirect) {
-                MessageBox.Show(redirectSource.Name + "/n" + item);
-            }
-
-        }
 
         //reset focus from Bright Regulating Label        
         private void Control_MouseLeave(object sender, EventArgs e) {
@@ -501,6 +473,22 @@ namespace RFController {
 
             if (ContainsDevice)
                 switch (Mtrf64.rxBuf.Cmd) {
+                    case NooCmd.Switch:
+                        if (Device.Type == NooDevType.RemController && Device.Redirect.Count != 0) {
+                            foreach (var item in Device.Redirect) {
+                                RfDevice dev = DevBase.Data[item];
+                                if (dev.Type == NooDevType.PowerUnitF) {
+                                    Mtrf64.SendCmd(dev.Channel, Mode.FTx, NooCmd.Switch, dev.Addr);
+                                } else {
+                                    if (dev.State == 1) {
+                                        Mtrf64.SendCmd(dev.Channel, Mode.Tx, NooCmd.Off, dev.Addr);
+                                    } else {
+                                        Mtrf64.SendCmd(dev.Channel, Mode.Tx, NooCmd.On, dev.Addr);
+                                    }
+                                }
+                            }
+                        }
+                        break;
                     case NooCmd.On:
                         if (Mtrf64.rxBuf.Mode == 0) {
                             Device.State = 1;
@@ -655,6 +643,7 @@ namespace RFController {
         }
         #endregion
         #region Context menu
+        #region Settings
         private void Settings_Click(object sender, EventArgs e) {
             int devAddr = ControlsHash[sender.GetHashCode()];
             Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 16);
@@ -664,6 +653,8 @@ namespace RFController {
             settingsForm = new SettingsForm(Mtrf64, DevBase, devAddr);
             settingsForm.Show();
         }
+        #endregion
+        #region Show info
         private void ShowInfo_Click(object sender, EventArgs e) {
             int hash = sender.GetHashCode();
             RfDevice rf = DevBase.Data[ControlsHash[hash]];
@@ -671,7 +662,8 @@ namespace RFController {
                 "Firmware version: {1}", rf.DevType, rf.FirmwareVer);
             MessageBox.Show(res);
         }
-
+        #endregion
+        #region Remove device
         private void RemoveDevice_Click(object sender, EventArgs e) {
 
             int devKey = ControlsHash[sender.GetHashCode()];
@@ -686,8 +678,15 @@ namespace RFController {
             RfDevice devToRemove = DevBase.Data[devKey];
             switch (devToRemove.Type) {
                 case NooDevType.PowerUnit:
-                    Mtrf64.Unbind(devToRemove.Channel, Mode.Tx);
-                    MessageBox.Show("Lol");
+                    DialogResult step1 = MessageBox.Show("Delete device?", "Warning!", MessageBoxButtons.YesNo);
+                    if (step1 == DialogResult.Yes) {
+                        Mtrf64.Unbind(devToRemove.Channel, Mode.Tx);
+                        MessageBox.Show("Now you must confirm unbind by pressing service button at power unit");
+                        DialogResult step2 = MessageBox.Show("Unbind confirmed?", "Unbind confirmation", MessageBoxButtons.YesNo);
+                        if (step2 == DialogResult.Yes) {
+                            Mtrf64.Unbind(devToRemove.Channel, Mode.Tx);
+                        }
+                    }
                     break;
                 case NooDevType.PowerUnitF:
                     Mtrf64.SendCmd(0, Mode.Service, 0, addr: devToRemove.Addr);
@@ -709,7 +708,8 @@ namespace RFController {
 
             UpdateForm(SelectedTab);
         }
-
+        #endregion
+        #region Switch Loop
         private void SwitchLoop_Click(object sender, EventArgs e) {
             ToolStripMenuItem tmi = (ToolStripMenuItem)sender;
             if (!tmi.Checked) {
@@ -721,6 +721,8 @@ namespace RFController {
                 t2.Stop();
             }
         }
+        #endregion
+        #region Move to
         //on mouse hover this function creates room list for mooving
         private void MoveTo_MouseHover(object sender, EventArgs e) {
             int DevKey = ControlsHash[sender.GetHashCode()];
@@ -752,11 +754,55 @@ namespace RFController {
             DevBase.Data[devKey].Room = toolStripDropDownItem.Text;
             toolStripDropDownItem.Dispose();
         }
-
-        private void RedirectTo_Click(object sender, EventArgs e) {
-
-
+        #endregion
+        #region Redirect to
+        private void RedirectTo_MouseHover(object sender, EventArgs e) {
+            int devKey = ControlsHash[sender.GetHashCode()];
+            RfDevice dev = DevBase.Data[devKey];
+            ToolStripDropDownItem toolStripDropDownItem = (ToolStripDropDownItem)sender;
+            var redirectListeners = DevBase.Data.Where((x) =>
+               x.Value.Type == NooDevType.PowerUnit || x.Value.Type == NooDevType.PowerUnitF
+            );
+            int num = 0;
+            toolStripDropDownItem.DropDownItems.Clear();
+            foreach (var item in redirectListeners) {
+                toolStripDropDownItem.DropDownItems.Add(item.Value.Name);
+                ToolStripMenuItem tsmi = (ToolStripMenuItem)toolStripDropDownItem.DropDownItems[num];
+                tsmi.Name = item.Value.Name;
+                tsmi.CheckOnClick = true;
+                if (dev.Redirect.Contains(item.Key)) {
+                    tsmi.Checked = true;
+                }
+                tsmi.CheckedChanged += RedirectToSelected_Click;
+                ControlsHash.Add(tsmi.GetHashCode(), ControlsHash[sender.GetHashCode()]);
+                num++;
+            }
         }
+
+        private void RedirectToSelected_Click(object sender, EventArgs e) {
+            ToolStripMenuItem toolStripDropDownItem = (ToolStripMenuItem)sender;
+            var findDevByName = DevBase.Data.Where(dev => dev.Value.Name == toolStripDropDownItem.Name);
+            int hash = sender.GetHashCode();
+            RfDevice redirectSource = DevBase.Data[ControlsHash[hash]];
+            if (toolStripDropDownItem.Checked) {
+                foreach (var item in findDevByName) {
+                    if (!redirectSource.Redirect.Contains(item.Key)) {
+                        redirectSource.Redirect.Add(item.Key);
+                    }
+                }
+            } else {
+                foreach (var item in findDevByName) {
+                    if (redirectSource.Redirect.Contains(item.Key)) {
+                        redirectSource.Redirect.Remove(item.Key);
+                    }
+                }
+            }
+            //foreach (var item in redirectSource.Redirect) {
+            //    string res = String.Format("Redirect \n From: {0} \n To: {1}", redirectSource.Name, DevBase.Data[item].Name);
+            //    MessageBox.Show(res);
+            //}
+        }
+        #endregion
         #endregion
 
         public static class SensorsTypes {
@@ -764,7 +810,6 @@ namespace RFController {
             public const int PT111 = 2;
             public const int PM111 = 3;
             public const int PM112 = 5;
-
         }
 
         void AddControl(int devKeyToAdd, string roomToAdd) {
@@ -776,7 +821,6 @@ namespace RFController {
             }
 
         }
-
         void RemoveControl(int devKey, string roomToRemove) {
             Control toRemove;
             //string roomToRemove = DevBase.Data[devKey].Room;
@@ -792,9 +836,6 @@ namespace RFController {
             SelectedTab = ((TabControl)sender).SelectedIndex;
             UpdateForm(SelectedTab);
         }
-
-
-
         //Updating form after add/remove room
         private void RoomsManagerForm_FormClosed(object sender, FormClosedEventArgs e) {
             if (RoomSelector.TabCount != Rooms.Count) {
@@ -827,7 +868,5 @@ namespace RFController {
                 }
             }
         }
-
-
     }
 }
