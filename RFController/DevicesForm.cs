@@ -671,41 +671,65 @@ namespace RFController {
             var roomsToRemove = from room in AllDevicesControls
                                 where room.ContainsKey(devKey)
                                 select Rooms[AllDevicesControls.IndexOf(room)];
-            //delete controls of device in each room
-            foreach (string roomToRemove in roomsToRemove) {
-                RemoveControl(devKey, roomToRemove);
-            }
+            
             RfDevice devToRemove = DevBase.Data[devKey];
             switch (devToRemove.Type) {
                 case NooDevType.PowerUnit:
-                    DialogResult step1 = MessageBox.Show("Delete device?", "Warning!", MessageBoxButtons.YesNo);
-                    if (step1 == DialogResult.Yes) {
+                    DialogResult step11 = MessageBox.Show("Delete device?", "Warning!", MessageBoxButtons.YesNo);
+                    if (step11 == DialogResult.Yes) {
+                        MessageBox.Show("After you click OK, you'de have about 15 sec. " +
+                            "to confirm unbind by pressing service button at power unit");
                         Mtrf64.Unbind(devToRemove.Channel, Mode.Tx);
-                        MessageBox.Show("Now you must confirm unbind by pressing service button at power unit");
-                        DialogResult step2 = MessageBox.Show("Unbind confirmed?", "Unbind confirmation", MessageBoxButtons.YesNo);
-                        if (step2 == DialogResult.Yes) {
-                            Mtrf64.Unbind(devToRemove.Channel, Mode.Tx);
+                        DialogResult step12 = MessageBox.Show("Unbind confirmed?", "Unbind confirmation", MessageBoxButtons.YesNo);
+                        if (step12 == DialogResult.Yes) {
+                            //delete controls of device in each room
+                            foreach (string roomToRemove in roomsToRemove) {
+                                RemoveControl(devKey, roomToRemove);
+                            }
+                            //Remove device from base
+                            DevBase.Data.Remove(devKey);
                         }
                     }
                     break;
                 case NooDevType.PowerUnitF:
-                    Mtrf64.SendCmd(0, Mode.Service, 0, addr: devToRemove.Addr);
-                    Mtrf64.Unbind(0, Mode.FTx, devToRemove.Addr);
-                    //MessageBox.Show("Lol");
+                    DialogResult step21 = MessageBox.Show("Delete device?", "Warning!", MessageBoxButtons.YesNo);
+                    if (step21 == DialogResult.Yes) {
+                        Mtrf64.SendCmd(0, Mode.Service, 0, addr: devToRemove.Addr);
+                        Mtrf64.Unbind(0, Mode.FTx, devToRemove.Addr);
+                        //delete controls of device in each room
+                        foreach (string roomToRemove in roomsToRemove) {
+                            RemoveControl(devKey, roomToRemove);
+                        }
+                        //Remove device from base
+                        DevBase.Data.Remove(devKey);
+                    }
                     break;
                 case NooDevType.RemController:
-                    Mtrf64.Unbind(devToRemove.Channel, Mode.Rx);
-                    MessageBox.Show("Lol");
+                    DialogResult step31 = MessageBox.Show("Delete device?", "Warning!", MessageBoxButtons.YesNo);
+                    if (step31 == DialogResult.Yes) {
+                        Mtrf64.Unbind(devToRemove.Channel, Mode.Rx);
+                        //delete controls of device in each room
+                        foreach (string roomToRemove in roomsToRemove) {
+                            RemoveControl(devKey, roomToRemove);
+                        }
+                        //Remove device from base
+                        DevBase.Data.Remove(devKey);
+                    }
+                    
                     break;
                 case NooDevType.Sensor:
-                    Mtrf64.Unbind(devToRemove.Channel, Mode.Rx);
-                    MessageBox.Show("Lol");
+                    DialogResult step41 = MessageBox.Show("Delete device?", "Warning!", MessageBoxButtons.YesNo);
+                    if (step41 == DialogResult.Yes) {
+                        Mtrf64.Unbind(devToRemove.Channel, Mode.Rx);
+                        //delete controls of device in each room
+                        foreach (string roomToRemove in roomsToRemove) {
+                            RemoveControl(devKey, roomToRemove);
+                        }
+                        //Remove device from base
+                        DevBase.Data.Remove(devKey);
+                    }
                     break;
             }
-
-            //Remove device from base
-            DevBase.Data.Remove(devKey);
-
             UpdateForm(SelectedTab);
         }
         #endregion
