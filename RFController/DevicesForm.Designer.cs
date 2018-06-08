@@ -46,6 +46,7 @@
             this.roomsManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RoomSelector = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.sceneryManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
@@ -183,7 +184,8 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.showLogToolStripMenuItem,
-            this.roomsManagerToolStripMenuItem});
+            this.roomsManagerToolStripMenuItem,
+            this.sceneryManagerToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(954, 24);
@@ -203,21 +205,21 @@
             // ShowLog_MenuItem
             // 
             this.ShowLog_MenuItem.Name = "ShowLog_MenuItem";
-            this.ShowLog_MenuItem.Size = new System.Drawing.Size(180, 22);
+            this.ShowLog_MenuItem.Size = new System.Drawing.Size(158, 22);
             this.ShowLog_MenuItem.Text = "ShowLog";
             this.ShowLog_MenuItem.Click += new System.EventHandler(this.ShowLog_MenuItem_Click);
             // 
             // serviceToolStripMenuItem
             // 
             this.serviceToolStripMenuItem.Name = "serviceToolStripMenuItem";
-            this.serviceToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.serviceToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.serviceToolStripMenuItem.Text = "Service";
             this.serviceToolStripMenuItem.Click += new System.EventHandler(this.ServiceToolStrip_MenuItem_Click);
             // 
             // addNewDeviceMenuItem
             // 
             this.addNewDeviceMenuItem.Name = "addNewDeviceMenuItem";
-            this.addNewDeviceMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addNewDeviceMenuItem.Size = new System.Drawing.Size(158, 22);
             this.addNewDeviceMenuItem.Text = "Add new device";
             this.addNewDeviceMenuItem.Click += new System.EventHandler(this.AddNewDevice_MenuItem_Click);
             // 
@@ -250,6 +252,13 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "All";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // sceneryManagerToolStripMenuItem
+            // 
+            this.sceneryManagerToolStripMenuItem.Name = "sceneryManagerToolStripMenuItem";
+            this.sceneryManagerToolStripMenuItem.Size = new System.Drawing.Size(110, 20);
+            this.sceneryManagerToolStripMenuItem.Text = "Scenery manager";
+            this.sceneryManagerToolStripMenuItem.Click += new System.EventHandler(this.SceneryManagerToolStripMenuItem_Click);
             // 
             // DevicesForm
             // 
@@ -301,5 +310,6 @@
         private System.Windows.Forms.ToolStripMenuItem roomsManagerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem replaceToToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem redirectToToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sceneryManagerToolStripMenuItem;
     }
 }

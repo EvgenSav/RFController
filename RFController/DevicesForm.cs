@@ -19,6 +19,7 @@ namespace RFController {
         AddNewDevForm addNewDevForm;
         SettingsForm settingsForm;
         GraphForm tempGraphForm;
+        SceneryManager sceneryManager;
 
         Action<int> FormUpdater;
         MyDB<int, RfDevice> DevBase;
@@ -67,7 +68,6 @@ namespace RFController {
             flowLayoutPanel1.Controls.Remove(groupBox1);
 
             AllDevicesControls = new List<SortedDictionary<int, Control>>();
-
 
             ControlsHash = new Dictionary<int, int>();
 
@@ -125,11 +125,7 @@ namespace RFController {
         private void T2_Elapsed(object sender, System.Timers.ElapsedEventArgs e) {
             if (LoopedDevKey != null) {
                 RfDevice rfd = DevBase.Data[(int)LoopedDevKey];
-                if (rfd.DevType > 0) {
-                    Mtrf64.SendCmd(0, 2, NooCmd.Switch, rfd.Addr);
-                } else {
-                    Mtrf64.SendCmd(rfd.Channel, 0, NooCmd.Switch);
-                }
+                rfd.SetSwitch(Mtrf64);
             }
         }
 
@@ -137,17 +133,10 @@ namespace RFController {
         private void T1_Elapsed(object sender, System.Timers.ElapsedEventArgs e) {
             int DevKey = ControlsHash[CurBright.GetHashCode()];
             RfDevice Device = DevBase.Data[DevKey];
-            int DevBright = 0;
             string bright = CurBright.Text.TrimEnd(' ', '%');
-            Int32.TryParse(bright, out int result);
-            if (Device.Type == NooDevType.PowerUnitF) { //Noo-F
-                DevBright = Round(((float)result / 100) * 255);
-                if (DevBright != 0) {
-                    Mtrf64.SendCmd(0, Mode.FTx, NooCmd.SetBrightness, Device.Addr, d0: DevBright);
-                }
-            } else if (Device.Type == NooDevType.PowerUnit) { //Noo
-                DevBright = 28 + result;
-                Mtrf64.SendCmd(Device.Channel, Mode.Tx, NooCmd.SetBrightness, fmt: 1, d0: DevBright);
+            Int32.TryParse(bright, out int brightRes);
+            if (brightRes <= 100) {
+                Device.SetBright(Mtrf64, brightRes);
             }
         }
 
@@ -213,7 +202,7 @@ namespace RFController {
                 foreach (Control control in cc1) {
                     switch (control.Name) {
                         case "TypeBox":
-                            control.Text = Device.GetDeviceType();
+                            control.Text = Device.GetDevTypeName();
                             if (Device.Type == NooDevType.PowerUnit || Device.Type == NooDevType.PowerUnitF) {
                                 int typeBoxHash = control.GetHashCode();
                                 if (!ControlsHash.ContainsKey(typeBoxHash)) {
@@ -239,17 +228,12 @@ namespace RFController {
                             if (Device.Type == NooDevType.PowerUnit || Device.Type == NooDevType.PowerUnitF) {
                                 int brightBoxHash = control.GetHashCode();
                                 control.Visible = true;
-                                if (Device.Type == NooDevType.PowerUnitF) {
-                                    float bright = ((float)Device.Bright / 255) * 100;
-                                    control.Text = Round(bright).ToString() + " %";
-                                } else {
-                                    if (Device.State != 0 && Device.Bright > 28) {
-                                        control.Text = (Device.Bright - 28).ToString() + " %";
-                                    } else {
-                                        control.Text = 0.ToString() + " %";
-                                    }
-                                }
 
+                                if (Device.State != 0) {
+                                    control.Text = Device.Bright.ToString() + " %";
+                                } else {
+                                    control.Text = 0.ToString() + " %";
+                                }
 
                                 if (!ControlsHash.ContainsKey(brightBoxHash)) {
                                     ControlsHash.Add(brightBoxHash, EachDeviceControls.Key);
@@ -310,9 +294,6 @@ namespace RFController {
             RoomSelector.Size = s1;
         }
 
-
-
-
         //reset focus from Bright Regulating Label        
         private void Control_MouseLeave(object sender, EventArgs e) {
             this.ActiveControl = null;
@@ -323,7 +304,7 @@ namespace RFController {
             lb.Focus();
         }
 
-        int Round(float val) {
+        public static int Round(float val) {
             if ((val - (int)val) > 0.5) return (int)val + 1;
             else return (int)val;
         }
@@ -365,6 +346,8 @@ namespace RFController {
         //   1.2 Show info
         //   1.3 Settings
         //   1.4 Switch Loop(for test, need to delete)
+        //   1.5 Move To(move deivices besides rooms)
+        //   1.6 Redirect To(for RC)
         //2. StatePictBox(green square in the up-right corner of groupbox) indicates On-Off state of power units
         //3. StateBox indicates bright lvl of  power units
         private Control GetCopy(Control c, int i) {
@@ -411,15 +394,7 @@ namespace RFController {
         private void Device_MouseClick(object sender, MouseEventArgs e) {
             int DevKey = ControlsHash[sender.GetHashCode()];
             RfDevice Device = DevBase.Data[DevKey];
-            if (Device.Type == NooDevType.PowerUnitF) { //Noo-F
-                Mtrf64.SendCmd(Device.Channel, Mode.FTx, NooCmd.Switch, Device.Addr);
-            } else if (Device.Type == NooDevType.PowerUnit) { //Noo
-                if (Device.State != 0) {
-                    Mtrf64.SendCmd(Device.Channel, Mode.Tx, NooCmd.Off);
-                } else {
-                    Mtrf64.SendCmd(Device.Channel, Mode.Tx, NooCmd.On);
-                }
-            }
+            Device.SetSwitch(Mtrf64);
         }
         #region Open DB
         private MyDB<int, List<TempAtChannel>> GetTempBase() {
@@ -477,15 +452,7 @@ namespace RFController {
                         if (Device.Type == NooDevType.RemController && Device.Redirect.Count != 0) {
                             foreach (var item in Device.Redirect) {
                                 RfDevice dev = DevBase.Data[item];
-                                if (dev.Type == NooDevType.PowerUnitF) {
-                                    Mtrf64.SendCmd(dev.Channel, Mode.FTx, NooCmd.Switch, dev.Addr);
-                                } else {
-                                    if (dev.State == 1) {
-                                        Mtrf64.SendCmd(dev.Channel, Mode.Tx, NooCmd.Off, dev.Addr);
-                                    } else {
-                                        Mtrf64.SendCmd(dev.Channel, Mode.Tx, NooCmd.On, dev.Addr);
-                                    }
-                                }
+                                dev.SetSwitch(Mtrf64);
                             }
                         }
                         break;
@@ -503,9 +470,7 @@ namespace RFController {
                         }
                         break;
                     case NooCmd.SetBrightness:
-                        if (Mtrf64.rxBuf.Mode == 0) {
-                            Device.Bright = Mtrf64.rxBuf.D0;
-                        }
+                        Device.ReadSetBrightAnswer(Mtrf64);
                         break;
                     case NooCmd.Unbind:
                         //Mtrf64.Unbind(Mtrf64.rxBuf.Ch, Mtrf64.rxBuf.Mode);
@@ -541,10 +506,7 @@ namespace RFController {
                         //if(dev1.rxBuf.D0 == 5) { //suf-1-300
                         switch (Mtrf64.rxBuf.Fmt) {
                             case 0: //state
-                                Device.DevType = Mtrf64.rxBuf.D0;
-                                Device.FirmwareVer = Mtrf64.rxBuf.D1;
-                                Device.State = Mtrf64.rxBuf.D2;
-                                Device.Bright = Mtrf64.rxBuf.D3;
+                                Device.ReadState(Mtrf64);
                                 break;
                             case 16: //settings
                                 Device.Settings = Mtrf64.rxBuf.D1 << 8 | Mtrf64.rxBuf.D0;
@@ -563,33 +525,6 @@ namespace RFController {
 
                 }
 
-        }
-        #endregion
-        #region Effects
-        private void SeriesOnBtn_Click(object sender, EventArgs e) {
-            foreach (var item in DevBase.Data) {
-                RfDevice rfd = item.Value;
-                Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.On);
-            }
-        }
-
-        private void SeriesOffBtn_Click(object sender, EventArgs e) {
-            foreach (var item in DevBase.Data) {
-                RfDevice rfd = item.Value;
-                Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.Off);
-            }
-        }
-        private void FaderBtn_Click(object sender, EventArgs e) {
-            for (int i = 0; i < 10; i++) {
-                foreach (var item in DevBase.Data) {
-                    RfDevice rfd = item.Value;
-                    Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.On);
-                }
-                foreach (var item in DevBase.Data.Reverse()) {
-                    RfDevice rfd = item.Value;
-                    Mtrf64.SendCmd(rfd.Channel, mode: 0, NooCmd.Off);
-                }
-            }
         }
         #endregion
         #region Main menu
@@ -641,14 +576,21 @@ namespace RFController {
             roomsManagerForm.Show();
             roomsManagerForm.FormClosed += RoomsManagerForm_FormClosed;
         }
+        private void SceneryManagerToolStripMenuItem_Click(object sender, EventArgs e) {
+            if(sceneryManager != null) {
+                sceneryManager.Close();
+            }
+            sceneryManager = new SceneryManager(DevBase);
+            sceneryManager.Show();
+        }
         #endregion
         #region Context menu
         #region Settings
         private void Settings_Click(object sender, EventArgs e) {
             int devAddr = ControlsHash[sender.GetHashCode()];
-            Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 16);
-            Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 17);
-            Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 18);
+            Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 16, MtrfMode: NooCtr.SendByAdr);
+            Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 17, MtrfMode: NooCtr.SendByAdr);
+            Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 18, MtrfMode: NooCtr.SendByAdr);
             if (settingsForm != null) { settingsForm.Close(); }
             settingsForm = new SettingsForm(Mtrf64, DevBase, devAddr);
             settingsForm.Show();
@@ -679,7 +621,7 @@ namespace RFController {
                     if (step11 == DialogResult.Yes) {
                         MessageBox.Show("After you click OK, you'de have about 15 sec. " +
                             "to confirm unbind by pressing service button at power unit");
-                        Mtrf64.Unbind(devToRemove.Channel, Mode.Tx);
+                        Mtrf64.SendCmd(devToRemove.Channel, NooMode.Tx, NooCmd.Unbind);
                         DialogResult step12 = MessageBox.Show("Unbind confirmed?", "Unbind confirmation", MessageBoxButtons.YesNo);
                         if (step12 == DialogResult.Yes) {
                             //delete controls of device in each room
@@ -694,8 +636,8 @@ namespace RFController {
                 case NooDevType.PowerUnitF:
                     DialogResult step21 = MessageBox.Show("Delete device?", "Warning!", MessageBoxButtons.YesNo);
                     if (step21 == DialogResult.Yes) {
-                        Mtrf64.SendCmd(0, Mode.FTx, NooCmd.Service, addr: devToRemove.Addr,d0:1);
-                        Mtrf64.SendCmd(0, Mode.FTx, NooCmd.Unbind, addr: devToRemove.Addr);
+                        Mtrf64.SendCmd(0, NooMode.FTx, NooCmd.Service, addrF: devToRemove.Addr,d0: 1, MtrfMode: NooCtr.SendByAdr);
+                        Mtrf64.SendCmd(0, NooMode.FTx, NooCmd.Unbind, addrF: devToRemove.Addr, MtrfMode: NooCtr.SendByAdr);
                         //delete controls of device in each room
                         foreach (string roomToRemove in roomsToRemove) {
                             RemoveControl(devKey, roomToRemove);
@@ -707,20 +649,19 @@ namespace RFController {
                 case NooDevType.RemController:
                     DialogResult step31 = MessageBox.Show("Delete device?", "Warning!", MessageBoxButtons.YesNo);
                     if (step31 == DialogResult.Yes) {
-                        Mtrf64.Unbind(devToRemove.Channel, Mode.Rx);
+                        Mtrf64.Unbind(devToRemove.Channel, NooMode.Rx);
                         //delete controls of device in each room
                         foreach (string roomToRemove in roomsToRemove) {
                             RemoveControl(devKey, roomToRemove);
                         }
                         //Remove device from base
                         DevBase.Data.Remove(devKey);
-                    }
-                    
+                    }                    
                     break;
                 case NooDevType.Sensor:
                     DialogResult step41 = MessageBox.Show("Delete device?", "Warning!", MessageBoxButtons.YesNo);
                     if (step41 == DialogResult.Yes) {
-                        Mtrf64.Unbind(devToRemove.Channel, Mode.Rx);
+                        Mtrf64.Unbind(devToRemove.Channel, NooMode.Rx);
                         //delete controls of device in each room
                         foreach (string roomToRemove in roomsToRemove) {
                             RemoveControl(devKey, roomToRemove);
@@ -845,6 +786,7 @@ namespace RFController {
             }
 
         }
+
         void RemoveControl(int devKey, string roomToRemove) {
             Control toRemove;
             //string roomToRemove = DevBase.Data[devKey].Room;
@@ -892,5 +834,7 @@ namespace RFController {
                 }
             }
         }
+
+        
     }
 }

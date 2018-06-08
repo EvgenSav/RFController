@@ -168,13 +168,13 @@ namespace RFController {
 
         private void BindBtn_Click(object sender, EventArgs e) {
             if (SelectedType == NooDevType.PowerUnitF) {
-                dev1.BindOn(FindedChannel, NooDevType.PowerUnitF);
+                dev1.SendCmd(0, NooMode.FTx, NooCmd.Bind);
                 Status.Text = "Waiting...";
                 WaitingBindFlag = true;
                 timer1.Interval = 1000;
                 timer1.Start();
             } else {
-                dev1.BindOn(FindedChannel, 0);
+                dev1.SendCmd(FindedChannel, NooMode.Tx, NooCmd.Bind);
                 Size = new Size(0, 465);
                 Step5ToolTip.Visible = true;
 
@@ -214,8 +214,8 @@ namespace RFController {
         }
 
         private void RoomBox_SelectionChangeCommitted(object sender, EventArgs e) {
-            SelectedType = (int)DevTypeBox.SelectedValue;
-            dev1.BindOn(0, 1, bindOff: true);                  //send disable bind if enabled
+            SelectedType = (int)DevTypeBox.SelectedValue;                
+            dev1.SendCmd(0, 0, 0, MtrfMode: NooCtr.BindModeDisable); //send disable bind if enabled
             Step2ToolTip.BackColor = Color.LightGreen;         //indicate step 2 - done
             FindedChannel = FindEmptyChannel(SelectedType);    //find empty channel
             if (FindedChannel != -1) {
@@ -243,8 +243,8 @@ namespace RFController {
                         BindBtn.Visible = true;
                         Size = new Size(0, 355);
                         break;
-                    default: //NooDevType.RemController or NooDevType.Sensor
-                        dev1.BindOn(FindedChannel, 1);  //enable bind at finded chnannel
+                    default: //NooDevType.RemController or NooDevType.Sensor     
+                        dev1.SendCmd(FindedChannel, NooMode.Rx, 0, MtrfMode: NooCtr.BindModeEnable); //enable bind at finded chnannel
                         Step3ToolTip.Text = "Step 3. Press service button";
                         Step3ToolTip.Visible = true;
                         Size = new Size(0, 280);

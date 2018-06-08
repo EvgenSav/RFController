@@ -24,11 +24,6 @@ namespace RFController {
         }
 
         public float[] LastTempBuf { get; private set; }
-        //public MtrfMode[] modes = {
-        //    new MtrfMode("Tx", 0),  new MtrfMode("Rx", 1),
-        //    new MtrfMode("F Tx", 2),  new MtrfMode("F Rx", 3),
-        //    new MtrfMode("Service", 4),  new MtrfMode("Firmw.Upd", 5)
-        //};
 
         Timer CmdQueueTmr;
         Task task1;
@@ -56,13 +51,12 @@ namespace RFController {
             CmdQueueTmr = new Timer(100);
             CmdQueueTmr.Elapsed += CmdQueueTmr_Elapsed;
             CmdQueueTmr.AutoReset = false;
-            //CmdQueueTmr.Start();
 
             task1 = new Task(new Action(CmdSendTask));
             task2 = new Task<List<Mtrf>>(new Func<List<Mtrf>>(SearchMtrf));
-
         }
 
+        //Task for sequentially transmitting 
         private void CmdSendTask() {
             while (queue.Count != 0) {
                 AnswerReceived.WaitOne(5000);
@@ -84,7 +78,7 @@ namespace RFController {
             foreach (var portName in Ports) {
                 OpenPort(portName);
                 rxBuf = new Buf();
-                SendCmd(0, Mode.Service, 0, queue: false);
+                SendCmd(0, NooMode.Service, 0, MtrfMode:NooCtr.ReadAnswer);
                 AnswerReceived2.WaitOne(1000);
                 ClosePort(portName);
                 AnswerReceived2.Reset();
@@ -104,7 +98,7 @@ namespace RFController {
         }
 
 
-        public void DataReceivedHandler(object sender, SerialDataReceivedEventArgs args) {
+        void DataReceivedHandler(object sender, SerialDataReceivedEventArgs args) {
             Stream s1 = serialPort.BaseStream;
             BinaryReader b1 = new BinaryReader(s1);
             rxBuf.LoadData(b1.ReadBytes(17));
@@ -117,8 +111,8 @@ namespace RFController {
                 AnswerReceived.Set();
                 AnswerReceived2.Set();
             }
-
         }
+
         public int ClosePort(string pName) {
             if (serialPort.IsOpen) {
                 serialPort.Close();
@@ -191,36 +185,36 @@ namespace RFController {
         }
 
         #region Noo Cmd code
-        public void BindOn(int channel, int mode, bool bindOff = false) {
-            Buf txBuf = new Buf();
-            txBuf.St = 171;
-            txBuf.Mode = mode;
-            if (bindOff) { //Send Bind Off
-                txBuf.Ctr = 4;
-            } else {
-                if (mode == Mode.Tx || mode == Mode.FTx) {   //Send Bind Cmd
-                    txBuf.Ctr = 0;
-                    txBuf.Cmd = NooCmd.Bind;
-                } else {                        //Send Enable Bind at channel
-                    txBuf.Ctr = 3;
-                    txBuf.Cmd = 0;
-                }
-            }
+        //public void BindOn(int channel, int mode, bool bindOff = false) {
+        //    Buf txBuf = new Buf();
+        //    txBuf.St = 171;
+        //    txBuf.Mode = mode;
+        //    if (bindOff) { //Send Bind Off
+        //        txBuf.Ctr = 4;
+        //    } else {
+        //        if (mode == NooMode.Tx || mode == NooMode.FTx) {   //Send Bind Cmd
+        //            txBuf.Ctr = 0;
+        //            txBuf.Cmd = NooCmd.Bind;
+        //        } else {                        //Send Enable Bind at channel
+        //            txBuf.Ctr = 3;
+        //            txBuf.Cmd = 0;
+        //        }
+        //    }
 
-            txBuf.Ch = channel;
-            txBuf.Crc = txBuf.GetCrc;
-            txBuf.Sp = 172;
+        //    txBuf.Ch = channel;
+        //    txBuf.Crc = txBuf.GetCrc;
+        //    txBuf.Sp = 172;
 
-            AnswerReceived.Set();
-            //AddCmdToQueue(txBuf);
-            SendData(txBuf);
-        }
+        //    AnswerReceived.Set();
+        //    //AddCmdToQueue(txBuf);
+        //    SendData(txBuf);
+        //}
         public void Unbind(int channel, int mode, int addrF = 0, bool unbindAll = false) {
             Buf txBuf = new Buf();
             txBuf.St = 171;
             txBuf.Mode = mode;
             if (!unbindAll) { //clear all MTRF64 memory
-                if (mode == Mode.Rx || mode == Mode.FRx) {
+                if (mode == NooMode.Rx || mode == NooMode.FRx) {
                     txBuf.Ctr = 5;
                 } else {
                     txBuf.Ctr = 0;
@@ -244,12 +238,13 @@ namespace RFController {
             txBuf.Sp = 172;
 
             AnswerReceived.Set();
-            //AddCmdToQueue(txBuf);
+            AddCmdToQueue(txBuf);
             SendData(txBuf);
         }
-        public void SendCmd(int channel, int mode, int cmd, int addr = 0,
+
+        public void SendCmd(int channel, int mode, int cmd, int addrF = 0,
             int fmt = 0, int d0 = 0, int d1 = 0, int d2 = 0, int d3 = 0,
-            bool queue = true) {
+            int MtrfMode = 0) {
             Buf txBuf = new Buf();
             txBuf.St = 171;
             txBuf.Mode = mode;
@@ -258,17 +253,13 @@ namespace RFController {
             txBuf.D1 = d1;
             txBuf.D2 = d2;
             txBuf.D3 = d3;
-            if (addr != 0) {
-                txBuf.AddrF = addr;
-                txBuf.Ctr = 8;
-            } else {
-                txBuf.Ctr = 0;
-            }
+            txBuf.AddrF = addrF;
+            txBuf.Ctr = MtrfMode;
             txBuf.Ch = channel;
             txBuf.Cmd = cmd;
             txBuf.Crc = txBuf.GetCrc;
             txBuf.Sp = 172;
-            if (queue) {
+            if (MtrfMode == NooCtr.SendCmd || MtrfMode == NooCtr.SendByAdr) {
                 AddCmdToQueue(txBuf);
             } else {
                 SendData(txBuf);
@@ -278,8 +269,6 @@ namespace RFController {
     }
 
 }
-
-
 
 
 public struct Mtrf {
@@ -295,7 +284,19 @@ public struct Mtrf {
         }
     }
 }
-public static class Mode {
+
+public static class NooCtr {
+    public const int SendCmd = 0;
+    public const int SendBroadcastCmd = 1;
+    public const int ReadAnswer = 2;
+    public const int BindModeEnable = 3;
+    public const int BindModeDisable = 4;
+    public const int ClearChannel = 5;
+    public const int ClearAllChannel = 6;
+    public const int UnbindAdrFromChannel = 7;
+    public const int SendByAdr = 8;
+}
+public static class NooMode {
     public const int Tx = 0;
     public const int Rx = 1;
     public const int FTx = 2;

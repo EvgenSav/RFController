@@ -23,16 +23,7 @@ namespace RFController {
                 ChannelSel.Items.Add(i);
             }
 
-
-            if (Mtrf64.ConnectedPortName == "Not connected") {
-                BindBtn.Enabled = false;
-                UnbindBtn.Enabled = false;
-                SendBtn.Enabled = false;
-            } else {
-                toolStripStatusLabel1.Text = "Connected: " + Mtrf64.ConnectedPortName;
-            }
-
-            Type modeType = typeof(Mode);
+            Type modeType = typeof(NooMode);
             System.Reflection.FieldInfo[] modeTypeFieldsInfo = modeType.GetFields();
             foreach (System.Reflection.FieldInfo modeField in modeTypeFieldsInfo) {
                 ModeSel.Items.Add(new { Name = modeField.Name, Value = modeField.GetValue(modeField) });
@@ -49,31 +40,22 @@ namespace RFController {
             CmdSel.DataSource = CmdSel.Items;
             CmdSel.DisplayMember = "Name";
             CmdSel.ValueMember = "Value";
-        }
 
-
-        private void BtnBind_Click(object sender, EventArgs e) {
-            int selectedChIndex = ChannelSel.SelectedIndex;
-            if (ChannelSel.SelectedIndex != -1 && ModeSel.SelectedIndex != -1) {
-                Mtrf64.BindOn((int)ChannelSel.SelectedItem, (int)ModeSel.SelectedValue);
+            Type ctrType = typeof(NooCtr);
+            System.Reflection.FieldInfo[] ctrTypeFieldsInfo = ctrType.GetFields();
+            foreach (System.Reflection.FieldInfo ctrField in ctrTypeFieldsInfo) {
+                CtrSel.Items.Add(new { Name = ctrField.Name, Value = ctrField.GetValue(ctrField) });
             }
-        }
-
-        private void BtnUnbind_KeyDown(object sender, KeyEventArgs e) {
-            if (!e.Shift) {
-                int selectedChIndex = ChannelSel.SelectedIndex;
-                if (selectedChIndex != -1) {
-                    Mtrf64.Unbind((int)ChannelSel.SelectedItem, (int)ModeSel.SelectedValue);
-                }
-            } else {
-                Mtrf64.Unbind(0, (int)ModeSel.SelectedValue, unbindAll: true);
-            }
+            CtrSel.DisplayMember = "Name";
+            CtrSel.ValueMember = "Value";
+            CtrSel.DataSource = CtrSel.Items;
         }
 
         private void SendBtn_Click(object sender, EventArgs e) {
             if (ChannelSel.SelectedIndex != -1 && ModeSel.SelectedIndex != -1 && CmdSel.SelectedIndex != -1) {
                 Mtrf64.SendCmd(ChannelSel.SelectedIndex, (int)ModeSel.SelectedValue, (int)CmdSel.SelectedValue,
-                    (int)Adr.Value, fmt:(int)Format.Value, (int)D0.Value, (int)D1.Value, (int)D2.Value, (int)D3.Value);
+                    (int)Adr.Value, fmt: (int)Format.Value, (int)D0.Value, (int)D1.Value, (int)D2.Value, (int)D3.Value, 
+                    MtrfMode: (int)CtrSel.SelectedValue);
             }
         }
     }
