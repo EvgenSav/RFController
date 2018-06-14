@@ -94,6 +94,13 @@ namespace RFController {
             t2.Elapsed += T2_Elapsed;
 
             splitContainer1.Panel2Collapsed = true;
+            ReInitSceneriesPanel();
+            InitRooms();
+            UpdateForm(0);
+        }
+
+        void ReInitSceneriesPanel() {
+            flowLayoutPanel2.Controls.Clear();
             foreach (var item in Sceneries) {
                 Button scenCallBtn = new Button {
                     Text = item.Name,
@@ -102,8 +109,6 @@ namespace RFController {
                 scenCallBtn.Click += ScenCallBtn_Click;
                 flowLayoutPanel2.Controls.Add(scenCallBtn);
             }
-            InitRooms();
-            UpdateForm(0);
         }
 
         private void ScenCallBtn_Click(object sender, EventArgs e) {
@@ -622,7 +627,12 @@ namespace RFController {
                 sceneryManager.Close();
             }
             sceneryManager = new SceneryManager(DevBase,Sceneries);
+            sceneryManager.FormClosed += SceneryManager_FormClosed;
             sceneryManager.Show();
+        }
+
+        private void SceneryManager_FormClosed(object sender, FormClosedEventArgs e) {
+            ReInitSceneriesPanel();
         }
         #endregion
         #region Context menu
@@ -888,10 +898,6 @@ namespace RFController {
                 splitContainer1.Panel2Collapsed = false;
                 flowLayoutPanel2.Show();
             }
-        }
-
-        private void tabPage1_MouseMove(object sender, MouseEventArgs e) {
-
         }
     }
 }
