@@ -29,6 +29,7 @@ namespace RFController {
         MTRF Mtrf64;
         List<SortedDictionary<int, Control>> AllDevicesControls;
         List<string> Rooms;
+        List<Scenery> Sceneries;
 
         Control Template;
         System.Timers.Timer t1;
@@ -49,6 +50,17 @@ namespace RFController {
                 }
             } catch {
                 Rooms = new List<string>(new string[] { "All" });
+            }
+
+            try {
+                using (StreamReader s1 = new StreamReader(new FileStream("sceneries.json", FileMode.Open))) {
+                    JsonSerializerSettings jsonSet = new JsonSerializerSettings {
+                        Formatting = Formatting.Indented
+                    };
+                    Sceneries = JsonConvert.DeserializeObject<List<Scenery>>(s1.ReadToEnd(), jsonSet);
+                }
+            } catch {
+                Sceneries = new List<Scenery>(64);
             }
 
             Mtrf64 = new MTRF();
@@ -80,8 +92,32 @@ namespace RFController {
             t1.Elapsed += T1_Elapsed;
             t2 = new System.Timers.Timer { AutoReset = true, Interval = 250 };
             t2.Elapsed += T2_Elapsed;
+
+            splitContainer1.Panel2Collapsed = true;
+            foreach (var item in Sceneries) {
+                Button scenCallBtn = new Button {
+                    Text = item.Name,
+                    Name = item.Name
+                };
+                scenCallBtn.Click += ScenCallBtn_Click;
+                flowLayoutPanel2.Controls.Add(scenCallBtn);
+            }
             InitRooms();
             UpdateForm(0);
+        }
+
+        private void ScenCallBtn_Click(object sender, EventArgs e) {
+            Button pressedBtn = (Button)sender;
+            Scenery calledScenery = Sceneries.Find(new Predicate<Scenery>((scen) => { return (scen.Name == pressedBtn.Text); }));
+            foreach (var scenItem in calledScenery.SceneryData) {
+                if (DevBase.Data.ContainsKey(scenItem.Key)) {
+                    if (scenItem.Value.State > 0) {
+                        DevBase.Data[scenItem.Key].SetBright(Mtrf64, scenItem.Value.Bright);
+                    } else {
+                        DevBase.Data[scenItem.Key].SetOff(Mtrf64);
+                    }
+                }
+            }
         }
 
         //initialize Rooms with devices controls
@@ -146,12 +182,16 @@ namespace RFController {
             if (serviceForm != null) serviceForm.Close();
             if (tempGraphForm != null) tempGraphForm.Close();
             if (roomsManagerForm != null) roomsManagerForm.Close();
+            if (sceneryManager != null) sceneryManager.Close();
 
             TemperatureLog.SaveToFile(String.Format("{0} templog.json", DateTime.Now.ToShortDateString()));
             DevBase.SaveToFile("BindedDeviceList.json");
 
             using (StreamWriter s1 = new StreamWriter(new FileStream("rooms.json", FileMode.Create, FileAccess.ReadWrite))) {
                 s1.Write(JsonConvert.SerializeObject(Rooms, Formatting.Indented));
+            }
+            using (StreamWriter s1 = new StreamWriter(new FileStream("sceneries.json", FileMode.Create, FileAccess.ReadWrite))) {
+                s1.Write(JsonConvert.SerializeObject(Sceneries, Formatting.Indented));
             }
         }
 
@@ -292,6 +332,7 @@ namespace RFController {
             s1.Height = s1.Height + 35;
             s1.Width = s1.Width + 15;
             RoomSelector.Size = s1;
+            splitContainer1.Size = s1;
         }
 
         //reset focus from Bright Regulating Label        
@@ -580,7 +621,7 @@ namespace RFController {
             if(sceneryManager != null) {
                 sceneryManager.Close();
             }
-            sceneryManager = new SceneryManager(DevBase);
+            sceneryManager = new SceneryManager(DevBase,Sceneries);
             sceneryManager.Show();
         }
         #endregion
@@ -835,6 +876,22 @@ namespace RFController {
             }
         }
 
-        
+        private void splitContainer1_Panel2_MouseLeave(object sender, EventArgs e) {
+            SplitterPanel panel = (SplitterPanel)sender;
+            splitContainer1.Panel2Collapsed = true;
+            flowLayoutPanel2.Hide();
+        }
+
+        private void DevicesForm_MouseMove(object sender, MouseEventArgs e) {
+            Size s = this.Size;
+            if (e.Y > s.Height * 0.8) {
+                splitContainer1.Panel2Collapsed = false;
+                flowLayoutPanel2.Show();
+            }
+        }
+
+        private void tabPage1_MouseMove(object sender, MouseEventArgs e) {
+
+        }
     }
 }

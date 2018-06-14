@@ -44,9 +44,11 @@
             this.serviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewDeviceMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.roomsManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sceneryManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RoomSelector = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.sceneryManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
             this.flowLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
@@ -54,6 +56,10 @@
             this.menuStrip1.SuspendLayout();
             this.RoomSelector.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
             this.SuspendLayout();
             // 
             // flowLayoutPanel1
@@ -230,10 +236,17 @@
             this.roomsManagerToolStripMenuItem.Text = "Rooms manager";
             this.roomsManagerToolStripMenuItem.Click += new System.EventHandler(this.RoomsManagerToolStripMenuItem_Click);
             // 
+            // sceneryManagerToolStripMenuItem
+            // 
+            this.sceneryManagerToolStripMenuItem.Name = "sceneryManagerToolStripMenuItem";
+            this.sceneryManagerToolStripMenuItem.Size = new System.Drawing.Size(110, 20);
+            this.sceneryManagerToolStripMenuItem.Text = "Scenery manager";
+            this.sceneryManagerToolStripMenuItem.Click += new System.EventHandler(this.SceneryManagerToolStripMenuItem_Click);
+            // 
             // RoomSelector
             // 
             this.RoomSelector.Controls.Add(this.tabPage1);
-            this.RoomSelector.Location = new System.Drawing.Point(6, 27);
+            this.RoomSelector.Location = new System.Drawing.Point(3, 3);
             this.RoomSelector.Multiline = true;
             this.RoomSelector.Name = "RoomSelector";
             this.RoomSelector.Padding = new System.Drawing.Point(3, 3);
@@ -252,13 +265,32 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "All";
             this.tabPage1.UseVisualStyleBackColor = true;
+            this.tabPage1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.tabPage1_MouseMove);
             // 
-            // sceneryManagerToolStripMenuItem
+            // splitContainer1
             // 
-            this.sceneryManagerToolStripMenuItem.Name = "sceneryManagerToolStripMenuItem";
-            this.sceneryManagerToolStripMenuItem.Size = new System.Drawing.Size(110, 20);
-            this.sceneryManagerToolStripMenuItem.Text = "Scenery manager";
-            this.sceneryManagerToolStripMenuItem.Click += new System.EventHandler(this.SceneryManagerToolStripMenuItem_Click);
+            this.splitContainer1.Location = new System.Drawing.Point(0, 27);
+            this.splitContainer1.Name = "splitContainer1";
+            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.RoomSelector);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.flowLayoutPanel2);
+            this.splitContainer1.Panel2.MouseLeave += new System.EventHandler(this.splitContainer1_Panel2_MouseLeave);
+            this.splitContainer1.Size = new System.Drawing.Size(376, 317);
+            this.splitContainer1.SplitterDistance = 263;
+            this.splitContainer1.TabIndex = 16;
+            // 
+            // flowLayoutPanel2
+            // 
+            this.flowLayoutPanel2.Location = new System.Drawing.Point(10, 9);
+            this.flowLayoutPanel2.Name = "flowLayoutPanel2";
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(356, 38);
+            this.flowLayoutPanel2.TabIndex = 0;
             // 
             // DevicesForm
             // 
@@ -266,10 +298,11 @@
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(954, 555);
-            this.Controls.Add(this.RoomSelector);
+            this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
             this.Name = "DevicesForm";
             this.Text = "RFController - Devices";
+            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.DevicesForm_MouseMove);
             this.flowLayoutPanel1.ResumeLayout(false);
             this.flowLayoutPanel1.PerformLayout();
             this.groupBox1.ResumeLayout(false);
@@ -281,6 +314,10 @@
             this.RoomSelector.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -311,5 +348,7 @@
         private System.Windows.Forms.ToolStripMenuItem replaceToToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem redirectToToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sceneryManagerToolStripMenuItem;
+        private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
     }
 }
