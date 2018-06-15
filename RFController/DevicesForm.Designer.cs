@@ -281,15 +281,19 @@
             this.splitContainer1.Panel2.Controls.Add(this.flowLayoutPanel2);
             this.splitContainer1.Panel2.MouseLeave += new System.EventHandler(this.splitContainer1_Panel2_MouseLeave);
             this.splitContainer1.Size = new System.Drawing.Size(376, 317);
-            this.splitContainer1.SplitterDistance = 263;
+            this.splitContainer1.SplitterDistance = 255;
             this.splitContainer1.TabIndex = 16;
             // 
             // flowLayoutPanel2
             // 
+            this.flowLayoutPanel2.AutoScroll = true;
             this.flowLayoutPanel2.Location = new System.Drawing.Point(10, 9);
+            this.flowLayoutPanel2.MaximumSize = new System.Drawing.Size(0, 50);
+            this.flowLayoutPanel2.MinimumSize = new System.Drawing.Size(50, 35);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-            this.flowLayoutPanel2.Size = new System.Drawing.Size(356, 38);
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(50, 40);
             this.flowLayoutPanel2.TabIndex = 0;
+            this.flowLayoutPanel2.WrapContents = false;
             // 
             // DevicesForm
             // 
@@ -297,8 +301,8 @@
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(954, 555);
-            this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.splitContainer1);
             this.Name = "DevicesForm";
             this.Text = "RFController - Devices";
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.DevicesForm_MouseMove);

@@ -338,6 +338,7 @@ namespace RFController {
             s1.Width = s1.Width + 15;
             RoomSelector.Size = s1;
             splitContainer1.Size = s1;
+            flowLayoutPanel2.Size = s1;
         }
 
         //reset focus from Bright Regulating Label        
