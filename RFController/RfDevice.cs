@@ -15,13 +15,31 @@ namespace RFController {
         public int Bright { get; set; }
         public bool IsDimmable { get; set; }
         public int FirmwareVer { get; set; }
-        public int DevType { get; set; }
+        public int ExtDevType { get; set; }
         public int Settings { get; set; }
         public int DimCorrLvlHi { get; set; }
         public int DimCorrLvlLow { get; set; }
         public int OnLvl { get; set; }
         public string Room { get; set; }
+        [NonSerialized]
+        public List<ILogItem> Log;
         public List<int> Redirect { get; } = new List<int>(16);
+        private int key;
+        public int Key {
+            get {
+                return key;
+            }
+            set {
+                key = value;
+                if (!DevicesForm.ActionLog.Data.ContainsKey(key)) {
+                    DevicesForm.ActionLog.Data.Add(key, new List<ILogItem>());
+                }
+                Log = DevicesForm.ActionLog.Data[key];
+            }
+        }
+
+        [NonSerialized]
+        public SortedList<string, DevView> Views = new SortedList<string, DevView>();
 
         public int AddRedirect(int devid) {
             Redirect.Add(devid);
@@ -80,7 +98,7 @@ namespace RFController {
         }
         public void ReadState(MTRF mtrfDev) {
             if (Type == NooDevType.PowerUnitF) {
-                DevType = mtrfDev.rxBuf.D0;
+                ExtDevType = mtrfDev.rxBuf.D0;
                 FirmwareVer = mtrfDev.rxBuf.D1;
                 State = mtrfDev.rxBuf.D2;
                 Bright = DevicesForm.Round(((float)mtrfDev.rxBuf.D3 / 255) * 100);
@@ -97,7 +115,7 @@ namespace RFController {
                     res = "Пульт";
                     break;
                 case NooDevType.Sensor:
-                    switch (DevType) {
+                    switch (ExtDevType) {
                         case 1:
                             res = "PT112";
                             break;
@@ -116,7 +134,7 @@ namespace RFController {
                     res = "Сил. блок";
                     break;
                 case NooDevType.PowerUnitF:
-                    switch (DevType) {
+                    switch (ExtDevType) {
                         case 0:
                             res = "MTRF-64";
                             break;

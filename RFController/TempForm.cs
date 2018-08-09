@@ -12,12 +12,12 @@ using System.Windows.Forms;
 namespace RFController {
     public partial class TempForm : Form {
         MTRF dev1;
-        MyDB<int, List<TempAtChannel>> TemperatureLog;
+        MyDB<int, List<LogItem>> TemperatureLog;
         Action<TextBox, string> ControlUpdater;
         Control.ControlCollection c1;
         GraphForm trend1;
         Dictionary<int, TextBox> controls = new Dictionary<int, TextBox>();
-        public TempForm(MTRF dev, MyDB<int, List<TempAtChannel>> tempLog) {
+        public TempForm(MTRF dev, MyDB<int, List<LogItem>> tempLog) {
             InitializeComponent();
             dev1 = dev;
             TemperatureLog = tempLog;
@@ -27,33 +27,33 @@ namespace RFController {
             c1 = flowLayoutPanel1.Controls;
 
             //set control's properties
-            foreach (TextBox item in c1) {
-                item.Click += Item_Click;
-                item.Enabled = false;
-                controls.Add(item.GetHashCode(), item);
-            }
+            //foreach (TextBox item in c1) {
+            //    item.Click += Item_Click;
+            //    item.Enabled = false;
+            //    controls.Add(item.GetHashCode(), item);
+            //}
 
             //update cotrols
-            foreach (var item in TemperatureLog.Data) {
-                float temp = item.Value[item.Value.Count - 1].Value;
-                string st1 = String.Format("Ch:{0}   {1:#.##} {2}C", item.Key, temp, (char)176);
-                c1[item.Key].Text = st1;
-                c1[item.Key].Enabled = true;
-                c1[item.Key].BackColor = Color.LightBlue;
-            }
+            //foreach (var item in TemperatureLog.Data) {
+            //    float temp = item.Value[item.Value.Count - 1].Value;
+            //    string st1 = String.Format("Ch:{0}   {1:#.##} {2}C", item.Key, temp, (char)176);
+            //    c1[item.Key].Text = st1;
+            //    c1[item.Key].Enabled = true;
+            //    c1[item.Key].BackColor = Color.LightBlue;
+            //}
         }
 
-        private void Item_Click(object sender, EventArgs e) {
-            TextBox tb = controls[sender.GetHashCode()];
-            if (tb.Enabled) {
-                if (trend1 != null) {
-                    trend1.Close();                    
-                }
-                List<TempAtChannel> chnData = TemperatureLog.Data[tb.TabIndex];
-                trend1 = new GraphForm(dev1, chnData);
-                trend1.Show();
-            }
-        }
+        //private void Item_Click(object sender, EventArgs e) {
+        //    TextBox tb = controls[sender.GetHashCode()];
+        //    if (tb.Enabled) {
+        //        if (trend1 != null) {
+        //            trend1.Close();                    
+        //        }
+        //        List<LogItem> chnData = TemperatureLog.Data[tb.TabIndex];
+        //        trend1 = new GraphForm(dev1, chnData);
+        //        trend1.Show();
+        //    }
+        //}
 
         private void Form3_CloseHandler(object sender, EventArgs e) {
             dev1.NewDataReceived -= Dev_NewDataReceived;
@@ -63,11 +63,11 @@ namespace RFController {
         }
 
         private void Dev_NewDataReceived(object sender, EventArgs e) {
-            foreach (var item in TemperatureLog.Data) {
-                float temp = item.Value[item.Value.Count - 1].Value;
-                string st1 = String.Format("Ch:{0}   {1:#.##} {2}C", item.Key, temp, (char)176);
-                c1[item.Key].BeginInvoke(ControlUpdater, c1[item.Key], st1);
-            }
+            //foreach (var item in TemperatureLog.Data) {
+            //    float temp = item.Value[item.Value.Count - 1].Value;
+            //    string st1 = String.Format("Ch:{0}   {1:#.##} {2}C", item.Key, temp, (char)176);
+            //    c1[item.Key].BeginInvoke(ControlUpdater, c1[item.Key], st1);
+            //}
         }
 
         private void UpdateTempBox(TextBox tb, string strToShow) {

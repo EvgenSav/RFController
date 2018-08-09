@@ -24,9 +24,9 @@
         /// </summary>
         private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
-            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+            this.DevicesPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.ContextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.removeDeviceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.firmwareVersionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,78 +47,77 @@
             this.sceneryManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RoomSelector = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
-            this.flowLayoutPanel1.SuspendLayout();
+            this.ShowScenBtn = new System.Windows.Forms.Button();
+            this.ScenariesPanel = new System.Windows.Forms.FlowLayoutPanel();
+            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+            this.DevicesPanel.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            this.contextMenuStrip1.SuspendLayout();
+            this.ContextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.StatePictBox)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.RoomSelector.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
+            this.flowLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // flowLayoutPanel1
+            // DevicesPanel
             // 
-            this.flowLayoutPanel1.AutoSize = true;
-            this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.flowLayoutPanel1.Controls.Add(this.groupBox1);
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 6);
-            this.flowLayoutPanel1.MaximumSize = new System.Drawing.Size(650, 0);
-            this.flowLayoutPanel1.MinimumSize = new System.Drawing.Size(150, 125);
-            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(150, 125);
-            this.flowLayoutPanel1.TabIndex = 0;
+            this.DevicesPanel.AutoScroll = true;
+            this.DevicesPanel.AutoSize = true;
+            this.DevicesPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.DevicesPanel.Controls.Add(this.groupBox1);
+            this.DevicesPanel.Location = new System.Drawing.Point(3, 6);
+            this.DevicesPanel.MaximumSize = new System.Drawing.Size(650, 0);
+            this.DevicesPanel.MinimumSize = new System.Drawing.Size(150, 125);
+            this.DevicesPanel.Name = "DevicesPanel";
+            this.DevicesPanel.Size = new System.Drawing.Size(150, 125);
+            this.DevicesPanel.TabIndex = 0;
             // 
             // groupBox1
             // 
             this.groupBox1.AutoSize = true;
             this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.groupBox1.ContextMenuStrip = this.contextMenuStrip1;
+            this.groupBox1.ContextMenuStrip = this.ContextMenuStrip1;
             this.groupBox1.Controls.Add(this.TypeBox);
             this.groupBox1.Controls.Add(this.StateBox);
             this.groupBox1.Controls.Add(this.StatePictBox);
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
-            this.groupBox1.MaximumSize = new System.Drawing.Size(120, 190);
-            this.groupBox1.MinimumSize = new System.Drawing.Size(120, 0);
+            this.groupBox1.MaximumSize = new System.Drawing.Size(120, 100);
+            this.groupBox1.MinimumSize = new System.Drawing.Size(120, 100);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(120, 100);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "groupBox1";
             // 
-            // contextMenuStrip1
+            // ContextMenuStrip1
             // 
-            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ContextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.removeDeviceToolStripMenuItem,
             this.firmwareVersionToolStripMenuItem,
             this.settingsToolStripMenuItem,
             this.switchLoopToolStripMenuItem,
             this.replaceToToolStripMenuItem,
             this.redirectToToolStripMenuItem});
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(165, 136);
+            this.ContextMenuStrip1.Name = "contextMenuStrip1";
+            this.ContextMenuStrip1.Size = new System.Drawing.Size(181, 158);
             // 
             // removeDeviceToolStripMenuItem
             // 
             this.removeDeviceToolStripMenuItem.Name = "removeDeviceToolStripMenuItem";
-            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.removeDeviceToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.removeDeviceToolStripMenuItem.Text = "Remove Device";
             // 
             // firmwareVersionToolStripMenuItem
             // 
             this.firmwareVersionToolStripMenuItem.Name = "firmwareVersionToolStripMenuItem";
-            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.firmwareVersionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.firmwareVersionToolStripMenuItem.Text = "Firmware Version";
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
             // switchLoopToolStripMenuItem
@@ -127,7 +126,7 @@
             this.onTimeToolStripMenuItem,
             this.offTimeToolStripMenuItem});
             this.switchLoopToolStripMenuItem.Name = "switchLoopToolStripMenuItem";
-            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.switchLoopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.switchLoopToolStripMenuItem.Text = "Switch Loop";
             // 
             // onTimeToolStripMenuItem
@@ -145,14 +144,14 @@
             // replaceToToolStripMenuItem
             // 
             this.replaceToToolStripMenuItem.Name = "replaceToToolStripMenuItem";
-            this.replaceToToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.replaceToToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.replaceToToolStripMenuItem.Text = "Move to";
             this.replaceToToolStripMenuItem.MouseHover += new System.EventHandler(this.MoveTo_MouseHover);
             // 
             // redirectToToolStripMenuItem
             // 
             this.redirectToToolStripMenuItem.Name = "redirectToToolStripMenuItem";
-            this.redirectToToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.redirectToToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.redirectToToolStripMenuItem.Text = "Redirect To";
             // 
             // TypeBox
@@ -257,7 +256,7 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.flowLayoutPanel1);
+            this.tabPage1.Controls.Add(this.DevicesPanel);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
@@ -266,34 +265,47 @@
             this.tabPage1.Text = "All";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // splitContainer1
+            // ShowScenBtn
             // 
-            this.splitContainer1.Location = new System.Drawing.Point(0, 27);
-            this.splitContainer1.Name = "splitContainer1";
-            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.ShowScenBtn.AutoSize = true;
+            this.ShowScenBtn.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.ShowScenBtn.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ShowScenBtn.Location = new System.Drawing.Point(1, 321);
+            this.ShowScenBtn.Margin = new System.Windows.Forms.Padding(1);
+            this.ShowScenBtn.MaximumSize = new System.Drawing.Size(0, 20);
+            this.ShowScenBtn.MinimumSize = new System.Drawing.Size(0, 20);
+            this.ShowScenBtn.Name = "ShowScenBtn";
+            this.ShowScenBtn.Size = new System.Drawing.Size(264, 20);
+            this.ShowScenBtn.TabIndex = 16;
+            this.ShowScenBtn.Text = "Sceneries";
+            this.ShowScenBtn.UseVisualStyleBackColor = true;
+            this.ShowScenBtn.Click += new System.EventHandler(this.ShowScenBtn_Click);
             // 
-            // splitContainer1.Panel1
+            // ScenariesPanel
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.RoomSelector);
+            this.ScenariesPanel.AutoScroll = true;
+            this.ScenariesPanel.AutoSize = true;
+            this.ScenariesPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.ScenariesPanel.Location = new System.Drawing.Point(3, 345);
+            this.ScenariesPanel.MaximumSize = new System.Drawing.Size(635, 60);
+            this.ScenariesPanel.MinimumSize = new System.Drawing.Size(50, 60);
+            this.ScenariesPanel.Name = "ScenariesPanel";
+            this.ScenariesPanel.Size = new System.Drawing.Size(50, 60);
+            this.ScenariesPanel.TabIndex = 0;
+            this.ScenariesPanel.WrapContents = false;
             // 
-            // splitContainer1.Panel2
+            // flowLayoutPanel1
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.flowLayoutPanel2);
-            this.splitContainer1.Panel2.MouseLeave += new System.EventHandler(this.splitContainer1_Panel2_MouseLeave);
-            this.splitContainer1.Size = new System.Drawing.Size(376, 317);
-            this.splitContainer1.SplitterDistance = 255;
-            this.splitContainer1.TabIndex = 16;
-            // 
-            // flowLayoutPanel2
-            // 
-            this.flowLayoutPanel2.AutoScroll = true;
-            this.flowLayoutPanel2.Location = new System.Drawing.Point(10, 9);
-            this.flowLayoutPanel2.MaximumSize = new System.Drawing.Size(0, 50);
-            this.flowLayoutPanel2.MinimumSize = new System.Drawing.Size(50, 35);
-            this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-            this.flowLayoutPanel2.Size = new System.Drawing.Size(50, 40);
-            this.flowLayoutPanel2.TabIndex = 0;
-            this.flowLayoutPanel2.WrapContents = false;
+            this.flowLayoutPanel1.AutoSize = true;
+            this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.flowLayoutPanel1.Controls.Add(this.RoomSelector);
+            this.flowLayoutPanel1.Controls.Add(this.ShowScenBtn);
+            this.flowLayoutPanel1.Controls.Add(this.ScenariesPanel);
+            this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(12, 27);
+            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(266, 408);
+            this.flowLayoutPanel1.TabIndex = 17;
             // 
             // DevicesForm
             // 
@@ -301,26 +313,23 @@
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(954, 555);
+            this.Controls.Add(this.flowLayoutPanel1);
             this.Controls.Add(this.menuStrip1);
-            this.Controls.Add(this.splitContainer1);
             this.Name = "DevicesForm";
             this.Text = "RFController - Devices";
-            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.DevicesForm_MouseMove);
-            this.flowLayoutPanel1.ResumeLayout(false);
-            this.flowLayoutPanel1.PerformLayout();
+            this.DevicesPanel.ResumeLayout(false);
+            this.DevicesPanel.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.contextMenuStrip1.ResumeLayout(false);
+            this.ContextMenuStrip1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.StatePictBox)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.RoomSelector.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
+            this.flowLayoutPanel1.ResumeLayout(false);
+            this.flowLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -328,9 +337,9 @@
 
         #endregion
 
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
+        private System.Windows.Forms.FlowLayoutPanel DevicesPanel;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ContextMenuStrip ContextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem removeDeviceToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem firmwareVersionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
@@ -351,7 +360,8 @@
         private System.Windows.Forms.ToolStripMenuItem replaceToToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem redirectToToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sceneryManagerToolStripMenuItem;
-        private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
+        private System.Windows.Forms.FlowLayoutPanel ScenariesPanel;
+        private System.Windows.Forms.Button ShowScenBtn;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
     }
 }

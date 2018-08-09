@@ -148,7 +148,7 @@ namespace RFController {
         public PictureBox brIcon { get; set; }
         public MyTreeNode(string name, int key = 0, int bright = 0, int state = 0) : base(name) {
             brIcon = new PictureBox {
-                Image = Image.FromFile("C:/Users/Evgen/Dropbox/VisualStudioProjects/Projects/RFController/RFController/bin/Debug/Icons/icons8-sun-25.png"),
+                Image = Image.FromFile(@"Icons\icons8-sun-25.png"),
                 Visible = true
             };
             BrightBox = new NumericUpDown {

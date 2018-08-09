@@ -74,6 +74,7 @@ namespace RFController {
                             WaitingBindFlag = false;
                             Device.Addr = dev1.rxBuf.AddrF;
                             KeyToAdd = Device.Addr;
+                            Device.Key = KeyToAdd;
                             //DevList.Add(dev1.rxBuf.AddrF, Device);
                             this.BeginInvoke(FormUpdater);
                         }
@@ -82,8 +83,9 @@ namespace RFController {
                         if (dev1.rxBuf.Cmd == NooCmd.Bind && dev1.rxBuf.Fmt == 1 &&
                             FindedChannel == dev1.rxBuf.Ch && dev1.rxBuf.Mode == 1) {
                             WaitingBindFlag = false;
-                            Device.DevType = dev1.rxBuf.D0;
+                            Device.ExtDevType = dev1.rxBuf.D0;
                             KeyToAdd = FindedChannel;
+                            Device.Key = KeyToAdd;
                             //DevList.Add(FindedChannel, Device);
                             this.BeginInvoke(FormUpdater);
                         }
@@ -94,6 +96,7 @@ namespace RFController {
                             WaitingBindFlag = false;
                             //DevList.Add(FindedChannel, Device);
                             KeyToAdd = FindedChannel;
+                            Device.Key = KeyToAdd;
                             this.BeginInvoke(FormUpdater);
                         }
                         break;
@@ -208,6 +211,7 @@ namespace RFController {
         private void OkBtn_Click(object sender, EventArgs e) {
             Step6ToolTip.BackColor = Color.LightGreen;
             KeyToAdd = FindedChannel;
+            Device.Key = KeyToAdd;
             //DevList.Add(FindedChannel, Device);
             WaitingBindFlag = false;
             UpdateForm();

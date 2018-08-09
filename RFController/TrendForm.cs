@@ -14,10 +14,10 @@ namespace RFController {
     public partial class GraphForm : Form {
         Action<Series> ChartUpdater;
         MTRF dev1;
-        List<TempAtChannel> ChannelTempLog;
+        List<ILogItem> ChannelTempLog;
         Series s1;
 
-        public GraphForm(MTRF dev, List<TempAtChannel> chnData) {
+        public GraphForm(MTRF dev, List<ILogItem> chnData) {
             InitializeComponent();
 
             ChannelTempLog = chnData;
@@ -34,15 +34,17 @@ namespace RFController {
             s1.IsXValueIndexed = true;
             ChartUpdater = new Action<Series>(ChartUpdate);
 
-
-            s1.Points.DataBind(ChannelTempLog, "CurrentTime", "Value","");
-            //for (int i = 0; i < ChannelTempLog.Count; i++) {
-            //    DataPoint p1 = new DataPoint();
-            //    p1.SetValueXY(ChannelTempLog[i].CurrentTime.ToShortTimeString(),
-            //        ChannelTempLog[i].Value);
-            //    s1.Points.Add(p1);
-            //        //= ChannelTempLog[i].CurrentTime.ToShortTimeString(), ChannelTempLog[i].Value);
-            //}            
+            if(ChannelTempLog.Count > 0) {
+                if ((ChannelTempLog[0] as LogItem) != null) {
+                    s1.Points.DataBind(ChannelTempLog, "CurrentTime", "Cmd", "");
+                }
+                if ((ChannelTempLog[0] as SensLogItem) != null) {
+                    s1.Points.DataBind(ChannelTempLog, "CurrentTime", "SensVal", "");
+                }
+                if ((ChannelTempLog[0] as PuLogItem) != null) {
+                    s1.Points.DataBind(ChannelTempLog, "CurrentTime", "Bright", "");
+                }
+            }           
         }
 
         private void TrendForm_FormClosing(object sender, FormClosingEventArgs e) {
@@ -52,8 +54,20 @@ namespace RFController {
         private void ChartUpdate(Series s) {
             if (s.Points.Count != ChannelTempLog.Count) {
                 DataPoint p1 = new DataPoint();
-                p1.SetValueXY(ChannelTempLog[ChannelTempLog.Count - 1].CurrentTime,
-                    ChannelTempLog[ChannelTempLog.Count - 1].Value);
+                if ((ChannelTempLog[0] as LogItem) != null) {
+                    p1.SetValueXY(ChannelTempLog[ChannelTempLog.Count - 1].CurrentTime,
+                    ChannelTempLog[ChannelTempLog.Count - 1].Cmd);
+                }
+                if ((ChannelTempLog[0] as SensLogItem) != null) {
+                    SensLogItem logItem = ChannelTempLog[ChannelTempLog.Count - 1] as SensLogItem;
+                    p1.SetValueXY(ChannelTempLog[ChannelTempLog.Count - 1].CurrentTime,
+                    logItem.SensVal);
+                }
+                if ((ChannelTempLog[0] as PuLogItem) != null) {
+                    PuLogItem logItem = ChannelTempLog[ChannelTempLog.Count - 1] as PuLogItem;
+                    p1.SetValueXY(ChannelTempLog[ChannelTempLog.Count - 1].CurrentTime,
+                    logItem.Bright);
+                }      
                 s.Points.Add(p1);
             }
             //s.Points.AddXY(ChannelTempLog[ChannelTempLog.Count-1].CurrentTime.ToShortTimeString(), 

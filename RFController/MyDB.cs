@@ -10,7 +10,6 @@ using System.IO;
 namespace RFController {
     [Serializable]
     public class MyDB<TKey, TValue> where TKey : struct /*where TValue : class*/ {
-        //public SortedDictionary<TKey, List<TValue>> Data;
         public SortedDictionary<TKey, TValue> Data;
 
         public MyDB() {
@@ -20,23 +19,50 @@ namespace RFController {
 
         public int SaveToFile(string path) {
             StreamWriter s1 = new StreamWriter(new FileStream(path, FileMode.Create, FileAccess.ReadWrite));
-            string serData = JsonConvert.SerializeObject(this,Formatting.Indented);
+            JsonSerializerSettings set1 = new JsonSerializerSettings {
+                Formatting = Formatting.Indented,
+                TypeNameHandling = TypeNameHandling.Auto
+            };
+            string serData = JsonConvert.SerializeObject(this,set1);
             s1.Write(serData);
             s1.Close();
             return 1;
         }
     }
+    public interface ILogItem {
+        DateTime CurrentTime { get; set; }
+        int Cmd { get; set; }
+    }
 
     [Serializable]
-    public class TempAtChannel {
+    public class LogItem:ILogItem {
         public DateTime CurrentTime { get;  set; }
-        public float Value { get;  set; }
-        public TempAtChannel(DateTime dt, float val) {
+        public int Cmd { get;  set; }
+        public LogItem(DateTime dt, int cmd) {
             CurrentTime = dt;
-            Value = val;
+            Cmd = cmd;
+        }
+    }
+
+    [Serializable]
+    public class PuLogItem : LogItem {
+        public int State { get; set; }
+        public int Bright { get; set; }
+
+        public PuLogItem(DateTime dt, int cmd, int state, int bright) : base(dt, cmd) {
+            State = state;
+            Bright = bright;
+        }
+    }
+
+    [Serializable]
+    public class SensLogItem : LogItem {
+        public float SensVal { get; set; }
+        public SensLogItem(DateTime dt, int cmd, float val):base(dt,cmd) {
+            SensVal = val;
         }
         public override string ToString() {
-            return String.Format("{0:#.##} {1}C", Value, (char)176);
+            return String.Format("{0:#.##} {1}C", SensVal, (char)176);
         }
     }
 }

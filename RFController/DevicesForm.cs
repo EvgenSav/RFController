@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -13,24 +14,22 @@ using Newtonsoft.Json;
 
 namespace RFController {
     public partial class DevicesForm : Form {
-        RoomsManagerForm roomsManagerForm;
-        ServiceForm serviceForm;
-        LogForm logForm;
-        AddNewDevForm addNewDevForm;
-        SettingsForm settingsForm;
-        GraphForm tempGraphForm;
+        RoomsManagerForm roomsManager;
+        ServiceForm service;
+        LogForm log;
+        AddNewDevForm addNewDev;
+        SettingsForm settings;
+        GraphForm tempGraph;
         SceneryManager sceneryManager;
 
         Action<int> FormUpdater;
         MyDB<int, RfDevice> DevBase;
-        MyDB<int, List<TempAtChannel>> TemperatureLog;
+        public static MyDB<int, List<ILogItem>> ActionLog { get; private set; }
 
-        Dictionary<int, int> ControlsHash;
         MTRF Mtrf64;
-        List<SortedDictionary<int, Control>> AllDevicesControls;
+
         List<string> Rooms;
         List<Scenery> Sceneries;
-
         Control Template;
         System.Timers.Timer t1;
         System.Timers.Timer t2;
@@ -41,27 +40,11 @@ namespace RFController {
 
         public DevicesForm() {
             InitializeComponent();
+            ActionLog = GetActionLog();
             DevBase = GetDeviceBase();
-            TemperatureLog = GetTempBase();
-
-            try {
-                using (StreamReader s1 = new StreamReader(new FileStream("rooms.json", FileMode.Open))) {
-                    Rooms = JsonConvert.DeserializeObject<List<string>>(s1.ReadToEnd());
-                }
-            } catch {
-                Rooms = new List<string>(new string[] { "All" });
-            }
-
-            try {
-                using (StreamReader s1 = new StreamReader(new FileStream("sceneries.json", FileMode.Open))) {
-                    JsonSerializerSettings jsonSet = new JsonSerializerSettings {
-                        Formatting = Formatting.Indented
-                    };
-                    Sceneries = JsonConvert.DeserializeObject<List<Scenery>>(s1.ReadToEnd(), jsonSet);
-                }
-            } catch {
-                Sceneries = new List<Scenery>(64);
-            }
+            
+            Rooms = GetRooms();
+            Sceneries = GetSceneries();
 
             Mtrf64 = new MTRF();
             List<Mtrf> connected = Mtrf64.GetAvailableComPorts();
@@ -77,11 +60,7 @@ namespace RFController {
             }
 
             Template = groupBox1;
-            flowLayoutPanel1.Controls.Remove(groupBox1);
-
-            AllDevicesControls = new List<SortedDictionary<int, Control>>();
-
-            ControlsHash = new Dictionary<int, int>();
+            DevicesPanel.Controls.Remove(groupBox1);
 
             Mtrf64.NewDataReceived += Dev1_NewDataReceived;
             this.FormClosing += DevicesForm_FormClosing;
@@ -93,21 +72,22 @@ namespace RFController {
             t2 = new System.Timers.Timer { AutoReset = true, Interval = 250 };
             t2.Elapsed += T2_Elapsed;
 
-            splitContainer1.Panel2Collapsed = true;
             ReInitSceneriesPanel();
             InitRooms();
             UpdateForm(0);
         }
 
         void ReInitSceneriesPanel() {
-            flowLayoutPanel2.Controls.Clear();
+            ScenariesPanel.Controls.Clear();
             foreach (var item in Sceneries) {
                 Button scenCallBtn = new Button {
                     Text = item.Name,
-                    Name = item.Name
+                    Name = item.Name,
+                    Size = new Size(40, 40),
+                    Margin = new Padding(0, 0, 0, 0)
                 };
                 scenCallBtn.Click += ScenCallBtn_Click;
-                flowLayoutPanel2.Controls.Add(scenCallBtn);
+                ScenariesPanel.Controls.Add(scenCallBtn);
             }
         }
 
@@ -127,35 +107,46 @@ namespace RFController {
 
         //initialize Rooms with devices controls
         void InitRooms() {
-            //init room All(tab idx = 0)
-            AllDevicesControls.Add(new SortedDictionary<int, Control>());
             TabControl.TabPageCollection tabPages = RoomSelector.TabPages;
             for (int tabIdx = 0; tabIdx < Rooms.Count; tabIdx++) {
                 string curRoom = Rooms[tabIdx];
                 if (tabPages.Count <= tabIdx) {
                     tabPages.Add(curRoom);
-                    AllDevicesControls.Add(new SortedDictionary<int, Control>());
                 }
                 tabPages[tabIdx].BackColor = Color.White;
-
-                tabPages[tabIdx].Controls.Add(new FlowLayoutPanel {
-                    AutoSize = flowLayoutPanel1.AutoSize,
-                    AutoSizeMode = flowLayoutPanel1.AutoSizeMode,
-                    BackColor = flowLayoutPanel1.BackColor,
-                    MinimumSize = flowLayoutPanel1.MinimumSize,
-                    MaximumSize = flowLayoutPanel1.MaximumSize,
-                    Location = flowLayoutPanel1.Location
-                });
+                if (tabIdx != 0) {
+                    tabPages[tabIdx].Controls.Add(new FlowLayoutPanel {
+                        Name = curRoom,
+                        AutoSize = DevicesPanel.AutoSize,
+                        AutoSizeMode = DevicesPanel.AutoSizeMode,
+                        BackColor = DevicesPanel.BackColor,
+                        MinimumSize = DevicesPanel.MinimumSize,
+                        MaximumSize = DevicesPanel.MaximumSize,
+                        Location = DevicesPanel.Location
+                    });
+                }
                 if (curRoom != "All") {
                     var devsInRoom = from Device in DevBase.Data
                                      where Device.Value.Room == curRoom
                                      select Device;
 
                     foreach (var item in devsInRoom) {
+                        DevView view = new DevView(item.Value);
+                        item.Value.Views.Add(curRoom, view);
                         AddControl(item.Key, curRoom);
                     }
                 } else {
                     foreach (var item in DevBase.Data) {
+                        DevView view = new DevView(item.Value);
+                        view.Info_mi_Click = new EventHandler(ShowInfo_Click);
+                        view.Remove_mi_Click = new EventHandler(RemoveDevice_Click);
+                        view.MoveToRoom_mi_Click = new EventHandler(MoveTo_MouseHover);
+                        view.Settings_mi_Click = new EventHandler(Settings_Click);
+                        view.RedirectTo_mi_Click = new EventHandler(RedirectTo_MouseHover);
+                        view.BrightChanged = new EventHandler<MouseEventArgs>(Bright_ValueChanged);
+                        view.ShowActionLogClicked = new EventHandler(ShowActionLog_Click);
+                        view.DevClicked = new EventHandler(Device_Click);
+                        item.Value.Views.Add(curRoom, view);
                         AddControl(item.Key, curRoom);
                     }
                 }
@@ -172,7 +163,7 @@ namespace RFController {
 
         //timer event handler for regulating brightness
         private void T1_Elapsed(object sender, System.Timers.ElapsedEventArgs e) {
-            int DevKey = ControlsHash[CurBright.GetHashCode()];
+            int DevKey = (int)CurBright.Tag;
             RfDevice Device = DevBase.Data[DevKey];
             string bright = CurBright.Text.TrimEnd(' ', '%');
             Int32.TryParse(bright, out int brightRes);
@@ -183,13 +174,13 @@ namespace RFController {
 
         private void DevicesForm_FormClosing(object sender, FormClosingEventArgs e) {
             Mtrf64.NewDataReceived -= Dev1_NewDataReceived;
-            if (logForm != null) logForm.Close();
-            if (serviceForm != null) serviceForm.Close();
-            if (tempGraphForm != null) tempGraphForm.Close();
-            if (roomsManagerForm != null) roomsManagerForm.Close();
+            if (log != null) log.Close();
+            if (service != null) service.Close();
+            if (tempGraph != null) tempGraph.Close();
+            if (roomsManager != null) roomsManager.Close();
             if (sceneryManager != null) sceneryManager.Close();
 
-            TemperatureLog.SaveToFile(String.Format("{0} templog.json", DateTime.Now.ToShortDateString()));
+            ActionLog.SaveToFile(String.Format("{0} templog.json", DateTime.Now.ToShortDateString()));
             DevBase.SaveToFile("BindedDeviceList.json");
 
             using (StreamWriter s1 = new StreamWriter(new FileStream("rooms.json", FileMode.Create, FileAccess.ReadWrite))) {
@@ -201,144 +192,12 @@ namespace RFController {
         }
 
         public void UpdateForm(int currentTabIdx) {
-            //update info of each device
-            foreach (var EachDeviceControls in AllDevicesControls[currentTabIdx]) {
-                RfDevice Device = DevBase.Data[EachDeviceControls.Key];
-                EachDeviceControls.Value.Text = Device.Name.ToString();
 
-                //Add context menu items hash for each device
-                foreach (ToolStripMenuItem item in EachDeviceControls.Value.ContextMenuStrip.Items) {
-                    int contMenuStripHash = item.GetHashCode();
-                    switch (item.Text) {
-                        case "Settings":
-                            if (Device.Type == NooDevType.PowerUnitF) {
-                                //int contMenuStripHash = item.GetHashCode();
-                                if (!ControlsHash.ContainsKey(contMenuStripHash)) {
-                                    ControlsHash.Add(contMenuStripHash, EachDeviceControls.Key);
-                                }
-                            } else {
-                                item.Visible = false;
-                            }
-                            break;
-                        case "Redirect To":
-                            if (Device.Type != NooDevType.PowerUnit && Device.Type != NooDevType.PowerUnit) {
-                                //int contMenuStripHash = item.GetHashCode();
-                                if (!ControlsHash.ContainsKey(contMenuStripHash)) {
-                                    item.MouseHover += RedirectTo_MouseHover;
-                                    ControlsHash.Add(contMenuStripHash, EachDeviceControls.Key);
-                                }
-                            } else {
-                                item.Visible = false;
-                            }
-                            break;
-                        default:
-                            //int contMenuStripHash = item.GetHashCode();
-                            if (!ControlsHash.ContainsKey(contMenuStripHash)) {
-                                ControlsHash.Add(contMenuStripHash, EachDeviceControls.Key);
-                            }
-                            break;
-                    }
-                }
-                //Add groupbox(devices) items hash for each device
-                if (!ControlsHash.ContainsKey(EachDeviceControls.Value.GetHashCode())) {
-                    ControlsHash.Add(EachDeviceControls.Value.GetHashCode(), EachDeviceControls.Key);
-                }
-                Control.ControlCollection cc1 = EachDeviceControls.Value.Controls;
-                foreach (Control control in cc1) {
-                    switch (control.Name) {
-                        case "TypeBox":
-                            control.Text = Device.GetDevTypeName();
-                            if (Device.Type == NooDevType.PowerUnit || Device.Type == NooDevType.PowerUnitF) {
-                                int typeBoxHash = control.GetHashCode();
-                                if (!ControlsHash.ContainsKey(typeBoxHash)) {
-                                    ControlsHash.Add(typeBoxHash, EachDeviceControls.Key);
-                                    control.MouseClick += Device_MouseClick;
-                                }
-                            }
-                            break;
-                        case "StatePictBox": //state indication
-                            PictureBox pictureBox = (PictureBox)control;
-                            pictureBox.BackColor = Color.LightGreen;
-                            if (Device.Type == NooDevType.PowerUnit ||
-                                Device.Type == NooDevType.PowerUnitF) { //power blocks
-                                if (Device.State != 0) {
-                                    control.Show();
-                                } else {
-                                    control.Hide();
-                                }
-                            } else { control.Hide(); }
-                            break;
+            Size s1 = DevicesPanel.Size;
 
-                        case "StateBox":
-                            if (Device.Type == NooDevType.PowerUnit || Device.Type == NooDevType.PowerUnitF) {
-                                int brightBoxHash = control.GetHashCode();
-                                control.Visible = true;
-
-                                if (Device.State != 0) {
-                                    control.Text = Device.Bright.ToString() + " %";
-                                } else {
-                                    control.Text = 0.ToString() + " %";
-                                }
-
-                                if (!ControlsHash.ContainsKey(brightBoxHash)) {
-                                    ControlsHash.Add(brightBoxHash, EachDeviceControls.Key);
-                                    control.MouseEnter += Control_MouseEnter;
-                                    control.MouseLeave += Control_MouseLeave;
-                                    control.MouseWheel += Bright_ValueChanged;
-                                    control.MouseClick += Device_MouseClick;
-                                }
-                            } else if (Device.Type == NooDevType.Sensor) {
-                                switch (Device.DevType) {
-                                    case SensorsTypes.PT112:
-                                        if (!TemperatureLog.Data.ContainsKey(EachDeviceControls.Key)) {
-                                            TemperatureLog.Data.Add(EachDeviceControls.Key, new List<TempAtChannel>());
-                                        }
-                                        int dataCounts = TemperatureLog.Data[EachDeviceControls.Key].Count;
-                                        if (dataCounts > 0) {
-                                            TempAtChannel temp = TemperatureLog.Data[EachDeviceControls.Key][dataCounts - 1];
-                                            control.Text = temp.ToString();
-                                        } else {
-                                            control.Text = "no data";
-                                        }
-                                        if (!ControlsHash.ContainsKey(control.GetHashCode())) {
-                                            ControlsHash.Add(control.GetHashCode(), EachDeviceControls.Key);
-                                            control.Click += ShowTemp_Click;
-                                        }
-                                        break;
-                                    case SensorsTypes.PM112:
-                                        if (!TemperatureLog.Data.ContainsKey(EachDeviceControls.Key)) {
-                                            TemperatureLog.Data.Add(EachDeviceControls.Key, new List<TempAtChannel>());
-                                        }
-                                        int data_counts = TemperatureLog.Data[EachDeviceControls.Key].Count;
-                                        if (data_counts > 0) {
-                                            TempAtChannel temp = TemperatureLog.Data[EachDeviceControls.Key][data_counts - 1];
-
-                                            control.Text = temp.CurrentTime.ToShortTimeString();
-                                        } else {
-                                            control.Text = "no data";
-                                        }
-                                        if (!ControlsHash.ContainsKey(control.GetHashCode())) {
-                                            ControlsHash.Add(control.GetHashCode(), EachDeviceControls.Key);
-                                            control.Click += ShowTemp_Click;
-                                        }
-                                        break;
-                                    default:
-                                        break;
-                                }
-
-                            } else {
-                                control.Visible = false;
-                            }
-                            break;
-                    }
-                }
-            }
-            Size s1 = flowLayoutPanel1.Size;
-            s1.Height = s1.Height + 35;
-            s1.Width = s1.Width + 15;
+            s1.Height = s1.Height + 32;
+            s1.Width += 15;
             RoomSelector.Size = s1;
-            splitContainer1.Size = s1;
-            flowLayoutPanel2.Size = s1;
         }
 
         //reset focus from Bright Regulating Label        
@@ -356,13 +215,19 @@ namespace RFController {
             else return (int)val;
         }
 
-        private void ShowTemp_Click(object sender, EventArgs e) {
-            int DevKey = ControlsHash[sender.GetHashCode()];
-            if (tempGraphForm != null) {
-                tempGraphForm.Close();
+        private void ShowActionLog_Click(object sender, EventArgs e) {
+            int devKey;
+            if ((sender as ToolStripMenuItem) != null) {
+                devKey = (int)((ToolStripMenuItem)sender).Tag;
+            } else {
+                devKey = (int)((Control)sender).Tag;
             }
-            tempGraphForm = new GraphForm(Mtrf64, TemperatureLog.Data[DevKey]);
-            tempGraphForm.Show();
+            
+            if (tempGraph != null) {
+                tempGraph.Close();
+            }
+            tempGraph = new GraphForm(Mtrf64, DevBase.Data[devKey].Log);
+            tempGraph.Show();
         }
 
         private void Bright_ValueChanged(object sender, MouseEventArgs e) {
@@ -397,69 +262,30 @@ namespace RFController {
         //   1.6 Redirect To(for RC)
         //2. StatePictBox(green square in the up-right corner of groupbox) indicates On-Off state of power units
         //3. StateBox indicates bright lvl of  power units
-        private Control GetCopy(Control c, int i) {
-            Type t;
-            ConstructorInfo[] ci;
-            ParameterInfo[] p;
+        
 
-            t = c.GetType();
-            ci = t.GetConstructors();
-            p = ci[0].GetParameters();
-
-            Control copy = (Control)ci[0].Invoke(p);
-            copy.Size = c.Size;
-            copy.ContextMenuStrip = new ContextMenuStrip();
-
-            foreach (ToolStripMenuItem item in c.ContextMenuStrip.Items) {
-                copy.ContextMenuStrip.Items.Add(item.Text);
-            }
-
-            //Context menu for devices
-            copy.ContextMenuStrip.Items[0].Click += RemoveDevice_Click;
-            copy.ContextMenuStrip.Items[1].Click += ShowInfo_Click;
-            copy.ContextMenuStrip.Items[2].Click += Settings_Click;
-            copy.ContextMenuStrip.Items[3].Click += SwitchLoop_Click;
-            copy.ContextMenuStrip.Items[4].MouseHover += MoveTo_MouseHover;
-
-            copy.MouseClick += Device_MouseClick;
-
-            foreach (Control item in c.Controls) {
-                t = item.GetType();
-                ci = t.GetConstructors();
-                p = ci[0].GetParameters();
-                Control newCntrol = (Control)ci[0].Invoke(p);
-                newCntrol.Font = item.Font;
-                newCntrol.Name = item.Name;
-                newCntrol.Size = item.Size;
-                newCntrol.Text = item.Text;
-                newCntrol.Location = item.Location;
-                copy.Controls.Add(newCntrol);
-            }
-            return copy;
-        }
-
-        private void Device_MouseClick(object sender, MouseEventArgs e) {
-            int DevKey = ControlsHash[sender.GetHashCode()];
+        private void Device_Click(object sender, EventArgs e) {
+            int DevKey = (int)((Control)sender).Tag;
             RfDevice Device = DevBase.Data[DevKey];
             Device.SetSwitch(Mtrf64);
         }
         #region Open DB
-        private MyDB<int, List<TempAtChannel>> GetTempBase() {
-            MyDB<int, List<TempAtChannel>> tempLog;
+        private MyDB<int, List<ILogItem>> GetActionLog() {
+            MyDB<int, List<ILogItem>> tempLog;
             try {
                 using (StreamReader s1 = new StreamReader(new FileStream(String.Format("{0} templog.json", DateTime.Now.ToShortDateString()), FileMode.Open))) {
                     string strlog = s1.ReadToEnd();
                     JsonSerializerSettings set1 = new JsonSerializerSettings {
-                        Formatting = Formatting.Indented
+                        Formatting = Formatting.Indented,
+                        TypeNameHandling = TypeNameHandling.Auto
                     };
-                    tempLog = JsonConvert.DeserializeObject<MyDB<int, List<TempAtChannel>>>(strlog, set1);
+                    tempLog = JsonConvert.DeserializeObject<MyDB<int, List<ILogItem>>>(strlog, set1);
                 }
             } catch {
-                tempLog = new MyDB<int, List<TempAtChannel>>();
+                tempLog = new MyDB<int, List<ILogItem>>();
             }
             return tempLog;
         }
-
         private MyDB<int, RfDevice> GetDeviceBase() {
             MyDB<int, RfDevice> devBase;
             try {
@@ -475,6 +301,31 @@ namespace RFController {
                 devBase = new MyDB<int, RfDevice>();
             }
             return devBase;
+        }
+        private List<string> GetRooms() {
+            List<string> rooms;
+            try {
+                using (StreamReader s1 = new StreamReader(new FileStream("rooms.json", FileMode.Open))) {
+                    rooms = JsonConvert.DeserializeObject<List<string>>(s1.ReadToEnd());
+                }
+            } catch {
+                rooms = new List<string>(new string[] { "All" });
+            }
+            return rooms;
+        }
+        private List<Scenery> GetSceneries() {
+            List<Scenery> sceneries;
+            try {
+                using (StreamReader s1 = new StreamReader(new FileStream("sceneries.json", FileMode.Open))) {
+                    JsonSerializerSettings jsonSet = new JsonSerializerSettings {
+                        Formatting = Formatting.Indented
+                    };
+                    sceneries = JsonConvert.DeserializeObject<List<Scenery>>(s1.ReadToEnd(), jsonSet);
+                }
+            } catch {
+                sceneries = new List<Scenery>(64);
+            }
+            return sceneries;
         }
         #endregion
         #region Parsing received data
@@ -493,15 +344,18 @@ namespace RFController {
                 }
             }
 
-            if (ContainsDevice)
+            if (ContainsDevice) {
                 switch (Mtrf64.rxBuf.Cmd) {
                     case NooCmd.Switch:
-                        if (Device.Type == NooDevType.RemController && Device.Redirect.Count != 0) {
+                        //redirect
+                        if (Device.Type == NooDevType.RemController && Device.Redirect.Count != 0) { 
                             foreach (var item in Device.Redirect) {
                                 RfDevice dev = DevBase.Data[item];
                                 dev.SetSwitch(Mtrf64);
-                            }
+                            }                            
                         }
+                        //Device.Log.Add(new LogItem(DateTime.Now, Device.State));
+                        Device.Log.Add(new LogItem(DateTime.Now, NooCmd.Switch));
                         break;
                     case NooCmd.On:
                         if (Mtrf64.rxBuf.Mode == 0) {
@@ -509,12 +363,14 @@ namespace RFController {
                             if (Device.Type == NooDevType.PowerUnitF) {
                                 Device.Bright = Mtrf64.rxBuf.D0;
                             }
+                            Device.Log.Add(new PuLogItem(DateTime.Now, NooCmd.On, Device.State,Device.Bright));
                         }
                         break;
                     case NooCmd.Off:
                         if (Mtrf64.rxBuf.Mode == 0) {
                             Device.State = 0;
                         }
+                        Device.Log.Add(new PuLogItem(DateTime.Now, NooCmd.On, Device.State, Device.Bright));
                         break;
                     case NooCmd.SetBrightness:
                         Device.ReadSetBrightAnswer(Mtrf64);
@@ -524,28 +380,28 @@ namespace RFController {
                         break;
                     case NooCmd.SensTempHumi:
                         Mtrf64.StoreTemperature(ref Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]);
-                        if (TemperatureLog.Data.ContainsKey(Mtrf64.rxBuf.Ch)) {
-                            TemperatureLog.Data[Mtrf64.rxBuf.Ch].Add(new TempAtChannel(DateTime.Now, Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]));
+                        if (ActionLog.Data.ContainsKey(Mtrf64.rxBuf.Ch)) {
+                            ActionLog.Data[Mtrf64.rxBuf.Ch].Add(new SensLogItem(DateTime.Now, NooCmd.SensTempHumi, Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]));
                         } else {
-                            TemperatureLog.Data.Add(Mtrf64.rxBuf.Ch, new List<TempAtChannel>());
-                            TemperatureLog.Data[Mtrf64.rxBuf.Ch].Add(new TempAtChannel(DateTime.Now, Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]));
+                            ActionLog.Data.Add(Mtrf64.rxBuf.Ch, new List<ILogItem>());
+                            ActionLog.Data[Mtrf64.rxBuf.Ch].Add(new SensLogItem(DateTime.Now, NooCmd.SensTempHumi, Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]));
                         }
                         //TemperatureLog.Add(Mtrf64.rxBuf.Ch,
                         //new TempAtChannel(DateTime.Now, Mtrf64.LastTempBuf[Mtrf64.rxBuf.Ch]));
                         break;
                     case NooCmd.TemporaryOn:
                         int DevKey = Mtrf64.rxBuf.Ch;
-                        if (!TemperatureLog.Data.ContainsKey(DevKey)) {
-                            TemperatureLog.Data.Add(DevKey, new List<TempAtChannel>());
+                        if (!ActionLog.Data.ContainsKey(DevKey)) {
+                            ActionLog.Data.Add(DevKey, new List<ILogItem>());
                         }
-                        int count = TemperatureLog.Data[DevKey].Count;
+                        int count = ActionLog.Data[DevKey].Count;
                         if (count > 0) {
-                            DateTime previous = TemperatureLog.Data[DevKey][count - 1].CurrentTime;
+                            DateTime previous = ActionLog.Data[DevKey][count - 1].CurrentTime;
                             if (DateTime.Now.Subtract(previous).Seconds > 4) {
-                                TemperatureLog.Data[DevKey].Add(new TempAtChannel(DateTime.Now, Mtrf64.rxBuf.D0));
+                                ActionLog.Data[DevKey].Add(new LogItem(DateTime.Now, Mtrf64.rxBuf.D0));
                             }
                         } else {
-                            TemperatureLog.Data[DevKey].Add(new TempAtChannel(DateTime.Now, Mtrf64.rxBuf.D0));
+                            ActionLog.Data[DevKey].Add(new LogItem(DateTime.Now, Mtrf64.rxBuf.D0));
                         }
                         break;
 
@@ -554,6 +410,7 @@ namespace RFController {
                         switch (Mtrf64.rxBuf.Fmt) {
                             case 0: //state
                                 Device.ReadState(Mtrf64);
+                                Device.Log.Add(new PuLogItem(DateTime.Now, Mtrf64.rxBuf.Cmd, Device.State, Device.Bright));
                                 break;
                             case 16: //settings
                                 Device.Settings = Mtrf64.rxBuf.D1 << 8 | Mtrf64.rxBuf.D0;
@@ -571,63 +428,67 @@ namespace RFController {
                         break;
 
                 }
+                foreach (var item in Device.Views) {
+                    item.Value.UpdateView();
+                }
+            }
 
         }
         #endregion
         #region Main menu
         private void ShowLog_MenuItem_Click(object sender, EventArgs e) {
             if (!ShowLog_MenuItem.Checked) {
-                logForm = new LogForm(Mtrf64);
-                logForm.FormClosing += (obj, args) => {
+                log = new LogForm(Mtrf64);
+                log.FormClosing += (obj, args) => {
                     ShowLog_MenuItem.Checked = false;
                 };
-                logForm.Show();
+                log.Show();
                 ShowLog_MenuItem.Checked = true;
             } else {
-                logForm.Close();
+                log.Close();
                 ShowLog_MenuItem.Checked = false;
             }
         }
 
         private void AddNewDevice_MenuItem_Click(object sender, EventArgs e) {
-            addNewDevForm = new AddNewDevForm(DevBase, Mtrf64, Rooms);
-            addNewDevForm.Show();
-            addNewDevForm.FormClosed += (_sender, args) => {
-                if (addNewDevForm.AddingOk) {
-                    WaitingForActionDev = addNewDevForm.Device;
-                    int keyToAdd = addNewDevForm.KeyToAdd;
-                    AddControl(keyToAdd, WaitingForActionDev.Room);
+            addNewDev = new AddNewDevForm(DevBase, Mtrf64, Rooms);
+            addNewDev.Show();
+            addNewDev.FormClosed += (_sender, args) => {
+                if (addNewDev.AddingOk) {
+                    WaitingForActionDev = addNewDev.Device;
+                    int keyToAdd = addNewDev.KeyToAdd;
                     DevBase.Data.Add(keyToAdd, WaitingForActionDev);
+                    AddControl(keyToAdd, WaitingForActionDev.Room);
                     this.UpdateForm(SelectedTab);
                 }
             };
         }
         private void ServiceToolStrip_MenuItem_Click(object sender, EventArgs e) {
             if (!serviceToolStripMenuItem.Checked) {
-                serviceForm = new ServiceForm(Mtrf64);
-                serviceForm.FormClosed += (_sender, args) => {
+                service = new ServiceForm(Mtrf64);
+                service.FormClosed += (_sender, args) => {
                     serviceToolStripMenuItem.Checked = false;
                 };
-                serviceForm.Show();
+                service.Show();
                 serviceToolStripMenuItem.Checked = true;
             } else {
-                serviceForm.Close();
+                service.Close();
                 serviceToolStripMenuItem.Checked = false;
             }
         }
         private void RoomsManagerToolStripMenuItem_Click(object sender, EventArgs e) {
-            if (roomsManagerForm != null) {
-                roomsManagerForm.Close();
+            if (roomsManager != null) {
+                roomsManager.Close();
             }
-            roomsManagerForm = new RoomsManagerForm(Rooms);
-            roomsManagerForm.Show();
-            roomsManagerForm.FormClosed += RoomsManagerForm_FormClosed;
+            roomsManager = new RoomsManagerForm(Rooms);
+            roomsManager.Show();
+            roomsManager.FormClosed += RoomsManagerForm_FormClosed;
         }
         private void SceneryManagerToolStripMenuItem_Click(object sender, EventArgs e) {
-            if(sceneryManager != null) {
+            if (sceneryManager != null) {
                 sceneryManager.Close();
             }
-            sceneryManager = new SceneryManager(DevBase,Sceneries);
+            sceneryManager = new SceneryManager(DevBase, Sceneries);
             sceneryManager.FormClosed += SceneryManager_FormClosed;
             sceneryManager.Show();
         }
@@ -639,33 +500,32 @@ namespace RFController {
         #region Context menu
         #region Settings
         private void Settings_Click(object sender, EventArgs e) {
-            int devAddr = ControlsHash[sender.GetHashCode()];
+            int devAddr = (int)((ToolStripMenuItem)sender).Tag;
             Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 16, MtrfMode: NooCtr.SendByAdr);
             Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 17, MtrfMode: NooCtr.SendByAdr);
             Mtrf64.SendCmd(0, 2, NooCmd.ReadState, devAddr, fmt: 18, MtrfMode: NooCtr.SendByAdr);
-            if (settingsForm != null) { settingsForm.Close(); }
-            settingsForm = new SettingsForm(Mtrf64, DevBase, devAddr);
-            settingsForm.Show();
+            if (settings != null) { settings.Close(); }
+            settings = new SettingsForm(Mtrf64, DevBase, devAddr);
+            settings.Show();
         }
         #endregion
         #region Show info
         private void ShowInfo_Click(object sender, EventArgs e) {
             int hash = sender.GetHashCode();
-            RfDevice rf = DevBase.Data[ControlsHash[hash]];
+            ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
+            RfDevice rf = DevBase.Data[(int)menuItem.Tag];
             string res = String.Format("Device type: {0} \n" +
-                "Firmware version: {1}", rf.DevType, rf.FirmwareVer);
+                "Firmware version: {1}", rf.ExtDevType, rf.FirmwareVer);
             MessageBox.Show(res);
         }
         #endregion
         #region Remove device
         private void RemoveDevice_Click(object sender, EventArgs e) {
-
-            int devKey = ControlsHash[sender.GetHashCode()];
+            ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
+            int devKey = (int)menuItem.Tag;
             //find rooms that contains device
-            var roomsToRemove = from room in AllDevicesControls
-                                where room.ContainsKey(devKey)
-                                select Rooms[AllDevicesControls.IndexOf(room)];
-            
+            var roomsToRemove = DevBase.Data.Where(dev => dev.Key == devKey).Select(dev => dev.Value.Room);
+
             RfDevice devToRemove = DevBase.Data[devKey];
             switch (devToRemove.Type) {
                 case NooDevType.PowerUnit:
@@ -688,7 +548,7 @@ namespace RFController {
                 case NooDevType.PowerUnitF:
                     DialogResult step21 = MessageBox.Show("Delete device?", "Warning!", MessageBoxButtons.YesNo);
                     if (step21 == DialogResult.Yes) {
-                        Mtrf64.SendCmd(0, NooMode.FTx, NooCmd.Service, addrF: devToRemove.Addr,d0: 1, MtrfMode: NooCtr.SendByAdr);
+                        Mtrf64.SendCmd(0, NooMode.FTx, NooCmd.Service, addrF: devToRemove.Addr, d0: 1, MtrfMode: NooCtr.SendByAdr);
                         Mtrf64.SendCmd(0, NooMode.FTx, NooCmd.Unbind, addrF: devToRemove.Addr, MtrfMode: NooCtr.SendByAdr);
                         //delete controls of device in each room
                         foreach (string roomToRemove in roomsToRemove) {
@@ -708,7 +568,7 @@ namespace RFController {
                         }
                         //Remove device from base
                         DevBase.Data.Remove(devKey);
-                    }                    
+                    }
                     break;
                 case NooDevType.Sensor:
                     DialogResult step41 = MessageBox.Show("Delete device?", "Warning!", MessageBoxButtons.YesNo);
@@ -732,7 +592,7 @@ namespace RFController {
             if (!tmi.Checked) {
                 tmi.Checked = true;
                 t2.Start();
-                LoopedDevKey = ControlsHash[sender.GetHashCode()];
+                LoopedDevKey = (int)((Control)sender).Tag;
             } else {
                 tmi.Checked = false;
                 t2.Stop();
@@ -742,8 +602,9 @@ namespace RFController {
         #region Move to
         //on mouse hover this function creates room list for mooving
         private void MoveTo_MouseHover(object sender, EventArgs e) {
-            int DevKey = ControlsHash[sender.GetHashCode()];
             ToolStripMenuItem menuItem = (ToolStripMenuItem)sender;
+            int DevKey = (int)menuItem.Tag;
+
             List<string> curRoom = new List<string> {
                 Rooms[SelectedTab]
             };
@@ -752,10 +613,7 @@ namespace RFController {
             foreach (string item in Rooms.Except(curRoom)) {
                 menuItem.DropDownItems.Add(item);
                 menuItem.DropDownItems[dropDownItemIdx].Click += MoveToNewRoom_Click;
-                int hash = menuItem.DropDownItems[dropDownItemIdx].GetHashCode();
-                if (!ControlsHash.ContainsKey(hash)) {
-                    ControlsHash.Add(hash, DevKey);
-                }
+                menuItem.DropDownItems[dropDownItemIdx].Tag = Rooms.IndexOf(item);
                 dropDownItemIdx++;
             }
 
@@ -764,7 +622,7 @@ namespace RFController {
         private void MoveToNewRoom_Click(object sender, EventArgs e) {
             ToolStripDropDownItem toolStripDropDownItem = (ToolStripDropDownItem)sender;
             int hash = sender.GetHashCode();
-            int devKey = ControlsHash[hash];
+            int devKey = (int)((ToolStripDropDownItem)sender).Tag;
 
             RemoveControl(devKey, Rooms[SelectedTab]);
             AddControl(devKey, toolStripDropDownItem.Text);
@@ -774,9 +632,9 @@ namespace RFController {
         #endregion
         #region Redirect to
         private void RedirectTo_MouseHover(object sender, EventArgs e) {
-            int devKey = ControlsHash[sender.GetHashCode()];
-            RfDevice dev = DevBase.Data[devKey];
             ToolStripDropDownItem toolStripDropDownItem = (ToolStripDropDownItem)sender;
+            int devKey = (int)toolStripDropDownItem.Tag;
+            RfDevice dev = DevBase.Data[devKey];
             var redirectListeners = DevBase.Data.Where((x) =>
                x.Value.Type == NooDevType.PowerUnit || x.Value.Type == NooDevType.PowerUnitF
             );
@@ -785,13 +643,13 @@ namespace RFController {
             foreach (var item in redirectListeners) {
                 toolStripDropDownItem.DropDownItems.Add(item.Value.Name);
                 ToolStripMenuItem tsmi = (ToolStripMenuItem)toolStripDropDownItem.DropDownItems[num];
+                tsmi.Tag = item.Key;
                 tsmi.Name = item.Value.Name;
                 tsmi.CheckOnClick = true;
                 if (dev.Redirect.Contains(item.Key)) {
                     tsmi.Checked = true;
                 }
                 tsmi.CheckedChanged += RedirectToSelected_Click;
-                ControlsHash.Add(tsmi.GetHashCode(), ControlsHash[sender.GetHashCode()]);
                 num++;
             }
         }
@@ -799,8 +657,7 @@ namespace RFController {
         private void RedirectToSelected_Click(object sender, EventArgs e) {
             ToolStripMenuItem toolStripDropDownItem = (ToolStripMenuItem)sender;
             var findDevByName = DevBase.Data.Where(dev => dev.Value.Name == toolStripDropDownItem.Name);
-            int hash = sender.GetHashCode();
-            RfDevice redirectSource = DevBase.Data[ControlsHash[hash]];
+            RfDevice redirectSource = DevBase.Data[(int)toolStripDropDownItem.OwnerItem.Tag];
             if (toolStripDropDownItem.Checked) {
                 foreach (var item in findDevByName) {
                     if (!redirectSource.Redirect.Contains(item.Key)) {
@@ -822,31 +679,22 @@ namespace RFController {
         #endregion
         #endregion
 
-        public static class SensorsTypes {
-            public const int PT112 = 1;
-            public const int PT111 = 2;
-            public const int PM111 = 3;
-            public const int PM112 = 5;
-        }
+
 
         void AddControl(int devKeyToAdd, string roomToAdd) {
             int roomIdx = Rooms.IndexOf(roomToAdd);
-            Control devControl = GetCopy(Template, 0);
-            if (!AllDevicesControls[roomIdx].ContainsKey(devKeyToAdd)) {
-                AllDevicesControls[roomIdx].Add(devKeyToAdd, devControl);
-                RoomSelector.TabPages[roomIdx].Controls[0].Controls.Add(devControl);
+            if (!DevBase.Data[devKeyToAdd].Views.ContainsKey(roomToAdd)) {
+                DevBase.Data[devKeyToAdd].Views.Add(roomToAdd, new DevView(DevBase.Data[devKeyToAdd]));
             }
-
+            RoomSelector.TabPages[roomIdx].Controls[0].Controls.Add(DevBase.Data[devKeyToAdd].Views[roomToAdd]);
         }
 
         void RemoveControl(int devKey, string roomToRemove) {
-            Control toRemove;
-            //string roomToRemove = DevBase.Data[devKey].Room;
             if (roomToRemove != null) { //delete from room
                 int roomIdx = Rooms.IndexOf(roomToRemove);
-                toRemove = AllDevicesControls[roomIdx][devKey];
-                AllDevicesControls[roomIdx].Remove(devKey);
-                RoomSelector.TabPages[roomIdx].Controls[0].Controls.Remove(toRemove);
+                DevView toRem = DevBase.Data[devKey].Views[roomToRemove];
+                RoomSelector.TabPages[roomIdx].Controls[0].Controls.Remove(toRem);
+                DevBase.Data[devKey].Views.Remove(roomToRemove);
             }
         }
 
@@ -862,7 +710,6 @@ namespace RFController {
                         if (!Rooms.Contains(tabpage.Text)) { //find room tab to delete
                             int tabIdx = RoomSelector.TabPages.IndexOf(tabpage);
                             RoomSelector.TabPages.Remove(tabpage);
-                            AllDevicesControls.RemoveAt(tabIdx); //remove from device controls
                         }
                     }
                 } else { //add room tab
@@ -873,32 +720,30 @@ namespace RFController {
                     foreach (var item in Rooms.Except(roomsTab)) {
                         RoomSelector.TabPages.Add(item);
                         RoomSelector.TabPages[Rooms.IndexOf(item)].Controls.Add(new FlowLayoutPanel {
-                            AutoSize = flowLayoutPanel1.AutoSize,
-                            AutoSizeMode = flowLayoutPanel1.AutoSizeMode,
-                            BackColor = flowLayoutPanel1.BackColor,
-                            MinimumSize = flowLayoutPanel1.MinimumSize,
-                            MaximumSize = flowLayoutPanel1.MaximumSize,
-                            Location = flowLayoutPanel1.Location
+                            AutoSize = DevicesPanel.AutoSize,
+                            AutoSizeMode = DevicesPanel.AutoSizeMode,
+                            BackColor = DevicesPanel.BackColor,
+                            MinimumSize = DevicesPanel.MinimumSize,
+                            MaximumSize = DevicesPanel.MaximumSize,
+                            Location = DevicesPanel.Location
                         });
-                        AllDevicesControls.Add(new SortedDictionary<int, Control>());
-
                     }
                 }
             }
         }
 
-        private void splitContainer1_Panel2_MouseLeave(object sender, EventArgs e) {
-            SplitterPanel panel = (SplitterPanel)sender;
-            splitContainer1.Panel2Collapsed = true;
-            flowLayoutPanel2.Hide();
-        }
-
-        private void DevicesForm_MouseMove(object sender, MouseEventArgs e) {
-            Size s = this.Size;
-            if (e.Y > s.Height * 0.8) {
-                splitContainer1.Panel2Collapsed = false;
-                flowLayoutPanel2.Show();
+        private void ShowScenBtn_Click(object sender, EventArgs e) {
+            if (ScenariesPanel.Visible) {
+                ScenariesPanel.Visible = false;
+            } else {
+                ScenariesPanel.Visible = true;
             }
         }
+    }
+    public static class SensorsTypes {
+        public const int PT112 = 1;
+        public const int PT111 = 2;
+        public const int PM111 = 3;
+        public const int PM112 = 5;
     }
 }
