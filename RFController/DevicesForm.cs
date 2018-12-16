@@ -180,7 +180,7 @@ namespace RFController {
             if (roomsManager != null) roomsManager.Close();
             if (sceneryManager != null) sceneryManager.Close();
 
-            ActionLog.SaveToFile(String.Format("{0} templog.json", DateTime.Now.ToShortDateString()));
+            ActionLog.SaveToFile($"{DateTime.Now.Day}_{DateTime.Now.Month}_{DateTime.Now.Year} templog.json");
             DevBase.SaveToFile("BindedDeviceList.json");
 
             using (StreamWriter s1 = new StreamWriter(new FileStream("rooms.json", FileMode.Create, FileAccess.ReadWrite))) {
